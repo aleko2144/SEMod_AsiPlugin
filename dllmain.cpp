@@ -12,7 +12,7 @@
 
 using namespace std;
 
-string cam = "Камера: ";
+string cam = "РљР°РјРµСЂР°: ";
 
 bool keyPressed = false;
 typedef void(*ptr)(int a1, int a2, int a3, int a4, char** text, int a6);
@@ -74,7 +74,7 @@ bool AutoTSLState = false;
 
 
 
-//динамические данные
+//РґРёРЅР°РјРёС‡РµСЃРєРёРµ РґР°РЅРЅС‹Рµ
 //int speed_rounded = *(DWORD *)0x6F3468;
 //int rpm_rounded = *(DWORD *)0x6F3474;
 //int gear = *(DWORD *)0x6F346C;
@@ -145,7 +145,7 @@ void PrintUserLog(const char *text)
 void panelPrint(char* text)
 {
 	typedef int(*textcall2)(void* a1);
-	int ret = textcall2(0x484050)(text); //выводит текст на панель
+	int ret = textcall2(0x484050)(text); //РІС‹РІРѕРґРёС‚ С‚РµРєСЃС‚ РЅР° РїР°РЅРµР»СЊ
 }
 
 bool CircleCheck(float circle_x, float camera_x, float circle_y, float camera_y, float circle_radius)
@@ -513,12 +513,12 @@ void Intro()
 
 		if (result.find("rus") != std::string::npos)
 		{
-			string hello = "Благодарим за скачивание Rig&Roll SEMod 1.2!";
-			string next_func = "Далее будут описаны некоторые новые функции.";
-			string camera = "При нажатии на клавишу C переключаются режимы внешней камеры.\nПри нажатии на клавишу O будут показаны часы.";
-			string ind = "При нажатии на клавишу < включаются указатели поворота влево, при нажатии > - вправо.\nНажмите на клавишу снова для их отключения. Поворотники имеются не на всех автомобилях.";
-			string mod = "Авторы модификации: aleko2144, Motika, и многие другие.\nvk.com/rnr_mods";
-			string end = "Удачи!";
+			string hello = "Р‘Р»Р°РіРѕРґР°СЂРёРј Р·Р° СЃРєР°С‡РёРІР°РЅРёРµ Rig&Roll SEMod 1.2!";
+			string next_func = "Р”Р°Р»РµРµ Р±СѓРґСѓС‚ РѕРїРёСЃР°РЅС‹ РЅРµРєРѕС‚РѕСЂС‹Рµ РЅРѕРІС‹Рµ С„СѓРЅРєС†РёРё.";
+			string camera = "РџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ C РїРµСЂРµРєР»СЋС‡Р°СЋС‚СЃСЏ СЂРµР¶РёРјС‹ РІРЅРµС€РЅРµР№ РєР°РјРµСЂС‹.\nРџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ O Р±СѓРґСѓС‚ РїРѕРєР°Р·Р°РЅС‹ С‡Р°СЃС‹.";
+			string ind = "РџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ < РІРєР»СЋС‡Р°СЋС‚СЃСЏ СѓРєР°Р·Р°С‚РµР»Рё РїРѕРІРѕСЂРѕС‚Р° РІР»РµРІРѕ, РїСЂРё РЅР°Р¶Р°С‚РёРё > - РІРїСЂР°РІРѕ.\nРќР°Р¶РјРёС‚Рµ РЅР° РєР»Р°РІРёС€Сѓ СЃРЅРѕРІР° РґР»СЏ РёС… РѕС‚РєР»СЋС‡РµРЅРёСЏ. РџРѕРІРѕСЂРѕС‚РЅРёРєРё РёРјРµСЋС‚СЃСЏ РЅРµ РЅР° РІСЃРµС… Р°РІС‚РѕРјРѕР±РёР»СЏС….";
+			string mod = "РђРІС‚РѕСЂС‹ РјРѕРґРёС„РёРєР°С†РёРё: aleko2144, Motika, Рё РјРЅРѕРіРёРµ РґСЂСѓРіРёРµ.\nvk.com/rnr_mods";
+			string end = "РЈРґР°С‡Рё!";
 			if (SI_timer == 1800){
 				panelPrint((char *)hello.c_str());
 			}
@@ -579,30 +579,30 @@ void Intro()
 int xres = 0;
 int yres = 0;
 
-int Viewer = 0; //указатель на наблюдателя
-int playerVehicle = 0; //машина игрока
-int VehicleTask = 0; //машина, но тут параметры
+int Viewer = 0; //observer pointer
+int playerVehicle = 0; //player vehicle
+int VehicleTask = 0; //same as previous, but there is parameters
 int cameraMode = 0;
-int Car_V = 0; //tech текущей машины
-int vehicleID = 0; //ID (tech) текущего автомобиля
+int Car_V = 0; //current car tech data
+int vehicleID = 0; //current car's tech ID
 
-int *PanelKey = 0; //переключатель панели (type==21)
+int *PanelKey = 0; //panel switcher (type==21)
 
-int *GearKeyAddressC = 0; //адрес индикатора передачи
-int *AvtoKeyAddressC = 0; //адрес индикатора АКПП/МКПП
-int *FuelLampKeyAddress = 0; //адрес индикатора низкого уровня топлива
-int *KMeter0KeyAddress = 0; //адреса индикаторов одометра
+int *GearKeyAddressC = 0; //pointer to gear number switch
+int *AvtoKeyAddressC = 0; //pointer to gear type indicator (automatic/manual)
+int *FuelLampKeyAddress = 0; //pointer to fuel lamp (enables if fuel level is low)
+int *KMeter0KeyAddress = 0; //pointer to odometer numbers
 int *KMeter1KeyAddress = 0;
 int *KMeter2KeyAddress = 0;
 int *KMeter3KeyAddress = 0;
 int *KMeter4KeyAddress = 0;
 
-int *TachoSpaceAddress = 0; //адрес локатора стрелки тахометра
-int *SpeedSpaceAddress = 0; //адрес локатора стрелки спидометра
-int *FuelArrowSpaceAddress = 0; //адрес локатора стрелки уровня топлива
+int *TachoSpaceAddress = 0; //pointer to tacho arrow space
+int *SpeedSpaceAddress = 0; //pointer to speed arrow space
+int *FuelArrowSpaceAddress = 0; //pointer to fuel arrow space
 
-int *ParkKeyAddress = 0; //адрес индикатора ручного тормоза
-int *TrailerKeyAddress = 0; //адрес индикатора наличия полуприцепа
+int *ParkKeyAddress = 0; //pointer to handbrake indicator
+int *TrailerKeyAddress = 0; //pointer to trailer indicator
 
 void Helicopter()
 {
@@ -1472,7 +1472,7 @@ void CustomRes(){
 	CheckAndSetVariableInt(MenuGasSpriteRectX, ((xres - 1024)/2));
 }
 
-void ReadParamsFromIni(){ //чтение параметров из ini, нужно ли выполнять ту или иную функцию
+void ReadParamsFromIni(){ //reading parameters from ini, to know that functions we need to run
 	if (UseCustomRes == "none"){
 		UseCustomRes = ReadBooleanFromIni("COMMON", "UseCustomRes", "off", ".\\SEMod.ini");
 	}
@@ -1490,7 +1490,7 @@ void ReadParamsFromIni(){ //чтение параметров из ini, нужно ли выполнять ту или 
 	}
 }
 
-void RunFunctions(){ //вызов функций без регистрации и СМС
+void RunFunctions(){ //calling needed functions without registration and SMS
 	if (UseCustomRes == "on") {
 		CustomRes();
 	}
