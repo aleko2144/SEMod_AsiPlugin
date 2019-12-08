@@ -12,7 +12,7 @@
 
 using namespace std;
 
-string cam = "Камера: ";
+string cam = "РљР°РјРµСЂР°: ";
 
 bool keyPressed = false;
 typedef void(*ptr)(int a1, int a2, int a3, int a4, char** text, int a6);
@@ -74,7 +74,7 @@ bool AutoTSLState = false;
 
 
 
-//динамические данные
+//РґРёРЅР°РјРёС‡РµСЃРєРёРµ РґР°РЅРЅС‹Рµ
 //int speed_rounded = *(DWORD *)0x6F3468;
 //int rpm_rounded = *(DWORD *)0x6F3474;
 //int gear = *(DWORD *)0x6F346C;
@@ -145,7 +145,7 @@ void PrintUserLog(const char *text)
 void panelPrint(char* text)
 {
 	typedef int(*textcall2)(void* a1);
-	int ret = textcall2(0x484050)(text); //выводит текст на панель
+	int ret = textcall2(0x484050)(text); //РІС‹РІРѕРґРёС‚ С‚РµРєСЃС‚ РЅР° РїР°РЅРµР»СЊ
 }
 
 bool CircleCheck(float circle_x, float camera_x, float circle_y, float camera_y, float circle_radius)
@@ -509,12 +509,12 @@ void Intro()
 
 	if (result.find("rus") != std::string::npos)
 	{
-		string hello = "Благодарим за скачивание Rig&Roll SEMod 1.2!";
-		string next_func = "Далее будут описаны некоторые новые функции.";
-		string camera = "При нажатии на клавишу C переключаются режимы внешней камеры.\nПри нажатии на клавишу O будут показаны часы.";
-		string ind = "При нажатии на клавишу < включаются указатели поворота влево, при нажатии > - вправо.\nНажмите на клавишу снова для их отключения. Поворотники имеются не на всех автомобилях.";
-		string mod = "Авторы модификации: aleko2144, Motika, и многие другие.\nvk.com/rnr_mods";
-		string end = "Удачи!";
+		string hello = "Р‘Р»Р°РіРѕРґР°СЂРёРј Р·Р° СЃРєР°С‡РёРІР°РЅРёРµ Rig&Roll SEMod 1.2!";
+		string next_func = "Р”Р°Р»РµРµ Р±СѓРґСѓС‚ РѕРїРёСЃР°РЅС‹ РЅРµРєРѕС‚РѕСЂС‹Рµ РЅРѕРІС‹Рµ С„СѓРЅРєС†РёРё.";
+		string camera = "РџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ C РїРµСЂРµРєР»СЋС‡Р°СЋС‚СЃСЏ СЂРµР¶РёРјС‹ РІРЅРµС€РЅРµР№ РєР°РјРµСЂС‹.\nРџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ O Р±СѓРґСѓС‚ РїРѕРєР°Р·Р°РЅС‹ С‡Р°СЃС‹.";
+		string ind = "РџСЂРё РЅР°Р¶Р°С‚РёРё РЅР° РєР»Р°РІРёС€Сѓ < РІРєР»СЋС‡Р°СЋС‚СЃСЏ СѓРєР°Р·Р°С‚РµР»Рё РїРѕРІРѕСЂРѕС‚Р° РІР»РµРІРѕ, РїСЂРё РЅР°Р¶Р°С‚РёРё > - РІРїСЂР°РІРѕ.\nРќР°Р¶РјРёС‚Рµ РЅР° РєР»Р°РІРёС€Сѓ СЃРЅРѕРІР° РґР»СЏ РёС… РѕС‚РєР»СЋС‡РµРЅРёСЏ. РџРѕРІРѕСЂРѕС‚РЅРёРєРё РёРјРµСЋС‚СЃСЏ РЅРµ РЅР° РІСЃРµС… Р°РІС‚РѕРјРѕР±РёР»СЏС….";
+		string mod = "РђРІС‚РѕСЂС‹ РјРѕРґРёС„РёРєР°С†РёРё: aleko2144, Motika, Рё РјРЅРѕРіРёРµ РґСЂСѓРіРёРµ.\nvk.com/rnr_mods";
+		string end = "РЈРґР°С‡Рё!";
 		if (SI_timer == 1800){
 			panelPrint((char *)hello.c_str());
 		}
