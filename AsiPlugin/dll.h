@@ -12,8 +12,8 @@ class DLLIMPORT DllClass
 {
   public:
 	DllClass();
-	virtual ~DllClass();
-	void HelloWorld();
+	//virtual ~DllClass();
+	//void HelloWorld();
 };
 
 #endif
