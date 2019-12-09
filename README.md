@@ -1,1 +1,2 @@
-# SEMod_AsiPlugin
+# SEMod Asi Plugin
+Однако, работает.
