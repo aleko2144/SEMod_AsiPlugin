@@ -10,7 +10,7 @@
 
 #include "new_structures.h"
 
-/*void BlockSpaceMatrix(int *address)
+/*void BlockSpaceMatrix(int address)
 {
 	float *Matrix = (float *)(address + 16);
 
@@ -33,9 +33,9 @@
 
 namespace BlockSpace
 {
-	void Move(int *address, Vector3D pos, int type)
+	void Move(int address, Vector3D pos, int type)
 	{
-		float *Matrix = (float *)(address + 16);
+		float *Matrix = (float *)((int *)address + 16);
 
 		if (type == 0)
 		{
@@ -51,9 +51,9 @@ namespace BlockSpace
 		}
 	}
 
-	Vector3D GetPosition(int *address)
+	Vector3D GetPosition(int address)
 	{
-		float *Matrix = (float *)(address + 16);
+		float *Matrix = (float *)((int *)address + 16);
 		Vector3D pos;
 		pos.x = Matrix[9];
 		pos.y = Matrix[10];
@@ -62,9 +62,9 @@ namespace BlockSpace
 		return pos;
 	}
 
-	Vector3D GetAngles(int *address)
+	Vector3D GetAngles(int address)
 	{
-		float *Matrix = (float *)(address + 16);
+		float *Matrix = (float *)((int *)address + 16);
 
 		double PI = 3.14159265358979;
 
@@ -108,15 +108,15 @@ namespace BlockSpace
 		return rot;
 	}
 
-	float *GetMatrix(int *address)
+	float *GetMatrix(int address)
 	{
-		float *Matrix = (float *)(address + 16);
+		float *Matrix = (float *)((int *)address + 16);
 		return Matrix;
 	}
 
-	void Rotate(int *address, Vector3D rot, int type)
+	void Rotate(int address, Vector3D rot, int type)
 	{
-		float *Matrix = (float *)(address + 16);
+		float *Matrix = (float *)((int *)address + 16);
 
 		double PI = 3.14159265358979;
 
