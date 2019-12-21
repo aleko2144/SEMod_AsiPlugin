@@ -213,11 +213,7 @@ void GameTimer()
 		sprintf(buffer, "%d:%d", hour, minute);
 	}
 
-	//sprintf(buffer, "%d : %d", hour, minute); //"%d:%d , %3.2f", hour, minute, current_time
-
-	if (GetAsyncKeyState(0x4F) & 0x8000){
-		panelPrint((char*)buffer);
-	}
+	panelPrint((char*)buffer);
 }
 
 void CheckAndSetVariableInt(int* offset, int value){
@@ -1220,11 +1216,11 @@ void Cargo()
 			{
 				if (veh_mass_ini < car_mass)
 				{
-					b3d::SetCaseSwitch(CargoKey, 1);
+					b3d::SetCaseSwitch_s(CargoKey, 1);
 				}
 				else
 				{
-					b3d::SetCaseSwitch(CargoKey, 0);
+					b3d::SetCaseSwitch_s(CargoKey, 0);
 				}
 			}
 		}
@@ -1284,7 +1280,10 @@ void RunFunctions(){ //calling needed functions without registration and SMS
 	A_Signals();
 	A_Interiors();
 	Cargo();
-	GameTimer();
+
+	if (GetAsyncKeyState(0x4F) & 0x8000){
+		GameTimer();
+	}
 
 	Helicopter();
 }
@@ -1417,6 +1416,7 @@ void PrintDebugInfo()
 	PrintUserLog((char *)(("yres: ") + to_string(yres)).c_str());
 	PrintUserLog((char *)(("Camera mode: ") + to_string(cameraMode)).c_str());
 	PrintUserLog((char *)(("Vehicle ID: ") + to_string(vehicleID)).c_str());
+	PrintUserLog((char *)(("airMode: ") + to_string(airMode)).c_str());
 	PrintUserLog("\n");
 	PrintUserLog("---------------OFFSETS:---------------");
 	PrintUserLog((char *)(("Viewer: ") + to_string(Viewer)).c_str());
