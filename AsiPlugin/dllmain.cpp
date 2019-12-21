@@ -766,26 +766,26 @@ void A_Interiors()
 		if (PriborKeyI != 0)
 		{
 			if (LightsState == 0){
-				b3d::SetCaseSwitch(PriborKeyI, 0);
+				b3d::SetCaseSwitch_s(PriborKeyI, 0);
 			}
 			else{
-				b3d::SetCaseSwitch(PriborKeyI, 1);
+				b3d::SetCaseSwitch_s(PriborKeyI, 1);
 			}
 		}
 
 		if (LightsKeyI != 0){
 			if (LightsState == 0){
-				b3d::SetCaseSwitch(LightsKeyI, 0);
+				b3d::SetCaseSwitch_s(LightsKeyI, 0);
 			}
 			else
 			{
-				b3d::SetCaseSwitch(LightsKeyI, 1);
+				b3d::SetCaseSwitch_s(LightsKeyI, 1);
 			}
 		}
 
 		if (ParkKeyI != 0)
 		{
-			b3d::SetCaseSwitch(ParkKeyI, (int)*(DWORD *)0x6F3348);
+			b3d::SetCaseSwitch_s(ParkKeyI, (int)*(DWORD *)0x6F3348);
 		}
 
 		if (ECOSpaceI != 0)
@@ -988,10 +988,10 @@ void Panel()
 		if (GearKeyAddressC != 0)
 		{			
 			if (*(DWORD *)0x6F346C <= 12){
-				b3d::SetCaseSwitch(GearKeyAddressC, *(DWORD *)0x6F346C);
+				b3d::SetCaseSwitch_s(GearKeyAddressC, *(DWORD *)0x6F346C);
 			}
 			if (*(DWORD *)0x6F346C > 12){
-				b3d::SetCaseSwitch(GearKeyAddressC, 12);
+				b3d::SetCaseSwitch_s(GearKeyAddressC, 12);
 			}
 		}
 		//
@@ -1087,13 +1087,13 @@ void A_Signals()
 			{
 				if (counter > 0.5)
 				{
-					b3d::SetCaseSwitch(TurnSignalRAddress, 1);
-					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalR_IAddress, 1); }
+					b3d::SetCaseSwitch_s(TurnSignalRAddress, 1);
+					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 1); }
 				}
 				else
 				{
-					b3d::SetCaseSwitch(TurnSignalRAddress, 0);
-					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalR_IAddress, 0); }
+					b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
+					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
 				}
 			}
 		}
@@ -1110,13 +1110,13 @@ void A_Signals()
 			{
 				if (counter > 0.5)
 				{
-					b3d::SetCaseSwitch(TurnSignalRAddress, 1);
-					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalR_IAddress, 1); }
+					b3d::SetCaseSwitch_s(TurnSignalRAddress, 1);
+					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 1); }
 				}
 				else
 				{
-					b3d::SetCaseSwitch(TurnSignalRAddress, 0);
-					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalR_IAddress, 0); }
+					b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
+					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
 				}
 			}
 		}
@@ -1124,8 +1124,8 @@ void A_Signals()
 		{
 			if (TurnSignalRAddress != 0)
 			{
-				b3d::SetCaseSwitch(TurnSignalRAddress, 0);
-				if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalR_IAddress, 0); }
+				b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
+				if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
 			}
 		}
 		
@@ -1149,13 +1149,13 @@ void A_Signals()
 			{
 				if (counter > 0.5)
 				{
-					b3d::SetCaseSwitch(TurnSignalLAddress, 1);
-					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalL_IAddress, 1); }
+					b3d::SetCaseSwitch_s(TurnSignalLAddress, 1);
+					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 1); }
 				}
 				else
 				{
-					b3d::SetCaseSwitch(TurnSignalLAddress, 0);
-					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalL_IAddress, 0); }
+					b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
+					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
 				}
 			}
 		}
@@ -1172,13 +1172,13 @@ void A_Signals()
 			{
 				if (counter > 0.5)
 				{
-					b3d::SetCaseSwitch(TurnSignalLAddress, 1);
-					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalL_IAddress, 1); }
+					b3d::SetCaseSwitch_s(TurnSignalLAddress, 1);
+					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 1); }
 				}
 				else
 				{
-					b3d::SetCaseSwitch(TurnSignalLAddress, 0);
-					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalL_IAddress, 0); }
+					b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
+					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
 				}
 			}
 		}
@@ -1186,8 +1186,8 @@ void A_Signals()
 		{
 			if (TurnSignalLAddress != 0)
 			{
-				b3d::SetCaseSwitch(TurnSignalLAddress, 0);
-				if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch(TurnSignalL_IAddress, 0); }
+				b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
+				if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
 			}
 		}
 	}
@@ -1227,6 +1227,8 @@ void Cargo()
 	}
 }
 
+bool IsGUIFixed = false;
+
 void CustomRes(){
 	int offsetX = xres - 225;
 	int* BackInfoPosX = (int*)0x6CED3C;
@@ -1236,6 +1238,8 @@ void CustomRes(){
 	CheckAndSetVariableInt(BackInfoPosX, (xres - 385));
 	CheckAndSetVariableInt(something_var, offsetX);
 	CheckAndSetVariableInt(MenuGasSpriteRectX, ((xres - 1024)/2));
+
+	IsGUIFixed = true;
 }
 
 void ReadParamsFromIni(){ //reading parameters from ini, to know that functions we need to run
@@ -1262,9 +1266,11 @@ void ReadParamsFromIni(){ //reading parameters from ini, to know that functions 
 	}
 }
 
-void RunFunctions(){ //calling needed functions without registration and SMS
+void RunFunctions(){
 	if (UseCustomRes == "on") {
-		CustomRes();
+		if (IsGUIFixed == false){
+			CustomRes();
+		}
 	}
 	if (AutoInd == "on") {
 		AutoIndicatorsSwitch();
@@ -1317,6 +1323,8 @@ void ResetValues(){
 
 	ParkKeyAddress = 0;
 	TrailerKeyAddress = 0;
+
+	IsGUIFixed = false;
 }
 
 void DrawDebugGUI(int *CWinApp){ //nw
@@ -1417,6 +1425,7 @@ void PrintDebugInfo()
 	PrintUserLog((char *)(("Camera mode: ") + to_string(cameraMode)).c_str());
 	PrintUserLog((char *)(("Vehicle ID: ") + to_string(vehicleID)).c_str());
 	PrintUserLog((char *)(("airMode: ") + to_string(airMode)).c_str());
+	PrintUserLog((char *)(("Is_GUI_fixed: ") + to_string(IsGUIFixed)).c_str());
 	PrintUserLog("\n");
 	PrintUserLog("---------------OFFSETS:---------------");
 	PrintUserLog((char *)(("Viewer: ") + to_string(Viewer)).c_str());
