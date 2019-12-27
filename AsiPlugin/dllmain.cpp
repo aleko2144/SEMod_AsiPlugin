@@ -71,6 +71,8 @@ bool AutoTSLState = false;
 
 string DebugMode = "none";
 
+bool AreValuesSet = false;
+
 ///////////////////////////////////////////////
 
 
@@ -348,6 +350,8 @@ int FuelArrowSpaceAddress = 0; //pointer to fuel arrow space
 
 int ParkKeyAddress = 0; //pointer to handbrake indicator
 int TrailerKeyAddress = 0; //pointer to trailer indicator
+
+float zoom = 0.5;
 
 void Helicopter()
 {
@@ -652,67 +656,36 @@ void A_Cam()
 
 		pos = (mouse_y / (MouseSens * 10));
 
-		/*
-		double car_x = *(DOUBLE *)0x68BAD0;
-		double car_y = *(DOUBLE *)0x68BAD8;
-		double car_z = *(DOUBLE *)0x68BAE0;
-		float camera_x = *(float *)0x6F69AC;
-		float camera_y = *(float *)0x6F69B0;
-		float camera_z = *(float *)0x6F69B4;
-
-		float circle_x = car_x;
-		float circle_y = car_y;
-		float circle_radius = 10;
-
-		bool IsCameraOnCircle = false;
-
-		float coeff = ((vertical - p.y)/50);
-
-		if(CircleCheck(circle_x, camera_x, circle_y, camera_y, coeff))
-		{
-			//PrintUserLog((char *)"camera on circle");
-			//PrintUserLog("\n");
-			IsCameraOnCircle = true;
-		}
-		else
-		{
-			//PrintUserLog((char *)"camera not on circle");
-			//PrintUserLog("\n");
-			IsCameraOnCircle = false;
-		}
-		*/
 
 		if (ML_IntView == "on")
 		{
 			*(float *)0x696D30 = -cam_rot;
 		}
 
-		//int cameraMode = *(DWORD *)(viewer + 1400);
-
 		if (ML_OutView == "on")
 		{
-			//float len = 0;
-			//float zoom = 0;
-			//char text11[255];
+			float mid_zoom = 13.35 - 0.15 * ((int)speed - 1);
 
-			//if (cameraMode == 1){
-				//if (speed > 10) {
-			//len = sqrt(pow((car_x - camera_x), 2) + pow((car_y - camera_y), 2));
+			float max_zoom = mid_zoom - 5;
+			float min_zoom = mid_zoom + 5;
 
-			//float coeff = sqrt(speed)/(speed/10);
+			if (GetAsyncKeyState(0x24) & 0x8000){ //home key
+					zoom += 0.025;
+			}
+			if (GetAsyncKeyState(0x23) & 0x8000){ //end key
+					zoom -= 0.025;
+			}
 
-			//if (len > 10) {
-			//	*(double *)0x6F69F0 -= coeff;
-			//}
+			float camera_zoom = (min_zoom + zoom * (max_zoom - min_zoom));
+			
+			if (speed > 20){
+				*(double *)0x6F69F0 = camera_zoom;
+			}
 
-			//if (len < 10) {
-			//	*(double *)0x6F69F0 += coeff;
-			//}
+			panelPrint((char*)(to_string(zoom)).c_str());
 
-			//panelPrint((char *)(to_string(coeff).c_str()));
-
-			*(double *)0x6F69F0 = pos;
-			*(double *)0x6F69F8 = -mouse_x;
+			//*(double *)0x6F69F0 = pos; //zoom
+			//*(double *)0x6F69F8 = -mouse_x; //camera_rotation
 		}
 	}
 }
@@ -842,192 +815,180 @@ void A_Interiors()
 
 void Panel()
 {
-	if (SpeedCoeff == 0){
-		SpeedCoeff = GetPrivateProfileFloat("COMMON", "SpeedCoeff", "2.25", ".\\SEMod.ini");
+	int kmph = *(DWORD *)(0x696C74);
+	double fuelLevel = *(float *)(playerVehicle + 20988); 
+
+	int v105 = *(DWORD *)(playerVehicle + 21600);
+	double v124 = *(float *)(v105 + 13100);
+	double v125 = 0;
+
+	if (kmph == 1){
+		v125 = v124 * 3.6;
+	}
+	else{
+		v125 = v124 * 2.23694;
 	}
 
-	if (TachoCoeff == 0){
-		TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
+	DWORD speed_r = v125;
+	double speed = v125;
+
+	if (DisplayPanel == "on"){
+		PanelKey = b3d::FindGameObject(0, "PanelKey");
+		PanelSpace = b3d::FindGameObject(0, "PanelSpace");
+
+		if (cameraMode == 0){
+			b3d::SetCaseSwitch_s(PanelKey, 0); 
+		}
+		else{
+			b3d::SetCaseSwitch_s(PanelKey, 1); 
+		}	
 	}
 
-	if (FuelCoeff == 0){
-		FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
+	if (PanelSpace == 0){
+		PanelSpace == b3d::FindGameObject(0, "PanelSpace");
+	}
+
+	if (GearKeyAddressC == 0){
+		GearKeyAddressC = b3d::FindGameObject(0, "GearKey");
+	}
+	if (AvtoKeyAddressC == 0){
+		AvtoKeyAddressC = b3d::FindGameObject(0, "AvtoKey");
+	}
+	if (FuelLampKeyAddress == 0){
+		FuelLampKeyAddress = b3d::FindGameObject(0, "FuelLampKey");
+	}
+	if (KMeter0KeyAddress == 0){
+		KMeter0KeyAddress = b3d::FindGameObject(0, "KMeter0Key");
+	}
+	if (KMeter1KeyAddress == 0){
+		KMeter1KeyAddress = b3d::FindGameObject(0, "KMeter1Key");
+	}
+	if (KMeter2KeyAddress == 0){
+		KMeter2KeyAddress = b3d::FindGameObject(0, "KMeter2Key");
+	}
+	if (KMeter3KeyAddress == 0){
+		KMeter3KeyAddress = b3d::FindGameObject(0, "KMeter3Key");
+	}
+	if (KMeter4KeyAddress == 0){
+		KMeter4KeyAddress = b3d::FindGameObject(0, "KMeter4Key");
+	}
+
+	if (ParkKeyAddress == 0){
+		ParkKeyAddress = b3d::FindGameObject(0, "ParkKey");
+	}
+	if (TrailerKeyAddress == 0){
+		TrailerKeyAddress = b3d::FindGameObject(0, "TrailerKey");
+	}
+
+	if (TachoSpaceAddress == 0){
+		TachoSpaceAddress = b3d::FindGameObject(0, "TachoSpace");
+	}
+	if (SpeedSpaceAddress == 0){
+		SpeedSpaceAddress = b3d::FindGameObject(0, "SpeedSpace");
+	}
+	if (FuelArrowSpaceAddress == 0){
+		FuelArrowSpaceAddress = b3d::FindGameObject(0, "FuelArrowSpace");
+	}
+
+	//pos 1st
+
+	if (UseCustomRes == "on"){
+		Vector3D panel_pos;
+		panel_pos.x = -1;
+		panel_pos.y = 0;
+		panel_pos.z = -0.8;
+
+		if (xres == 1360 || xres == 1366 || yres == 900 || yres == 800 || yres == 720){
+			panel_pos.z = -0.65;
+		}
+
+		if (BlockSpace::GetPosition(PanelSpace).z != panel_pos.z){
+			BlockSpace::Move(PanelSpace, panel_pos, 1);
+		}
+	}
+
+	//Speed, Tacho, Fuel
+	float rpm_r = (*(float *)(playerVehicle + 20968) * 0.60000002);
+
+	//float speedCoeff = 2.25;
+	float _speed = 0;
+	if (speed <= 120){
+		_speed = (speed * SpeedCoeff);
+	}
+	else{
+		_speed = (120 * SpeedCoeff);
+	}
+
+	//float tachoCoeff = 10.8;
+	float _tacho = 0;
+	if (rpm_r <= 25.0){
+		_tacho = (rpm_r * TachoCoeff);
+	}
+	else{
+		_tacho = (25.0 * TachoCoeff);
+	}
+
+	//float fuelCoeff = 135;
+	float _fuelArrow = (fuelLevel * FuelCoeff);
+
+	if (SpeedSpaceAddress != 0){
+		Vector3D speed_v; speed_v.x = 0; speed_v.y = _speed; speed_v.z = 0;
+		BlockSpace::Rotate(SpeedSpaceAddress, speed_v, 0);
+	}
+	if (TachoSpaceAddress != 0){
+		Vector3D tacho_v; tacho_v.x = 0; tacho_v.y = _tacho; tacho_v.z = 0;
+		BlockSpace::Rotate(TachoSpaceAddress, tacho_v, 0);
+	}
+	if (FuelArrowSpaceAddress != 0){
+		Vector3D fuel_v; fuel_v.x = 0; fuel_v.y = _fuelArrow; fuel_v.z = 0;
+		BlockSpace::Rotate(FuelArrowSpaceAddress, fuel_v, 0);
 	}
 	//
 
-	if (Viewer != 0)
-	{	
-		//PrintUserLog((char*)"panel code started");
-		//PrintUserLog("\n");
-		//get player vehcile
-		double fuelLevel = *(float *)(playerVehicle + 20988); //double fuelLevel = *(float *)(VehicleTask + 20972);
-		//int speed = *(DWORD *)0x6F3468;
 
-		int v105 = *(DWORD *)(playerVehicle + 21600);
-		double v124 = *(float *)(v105 + 13100);
-		double v125 = v124 * 3.6;
-
-		DWORD speed_r = v125;
-		double speed = v125;
-
-		if (DisplayPanel == "on"){
-			PanelKey = b3d::FindGameObject(0, "PanelKey");
-			PanelSpace = b3d::FindGameObject(0, "PanelSpace");
-
-			if (cameraMode == 0){
-				b3d::SetCaseSwitch_s(PanelKey, 0); 
-			}
-			else{
-				b3d::SetCaseSwitch_s(PanelKey, 1); 
-			}	
+	//GearKey
+	if (GearKeyAddressC != 0)
+	{			
+		if (*(DWORD *)0x6F346C <= 12){
+			b3d::SetCaseSwitch_s(GearKeyAddressC, *(DWORD *)0x6F346C);
 		}
-
-		if (PanelSpace == 0){
-			PanelSpace == b3d::FindGameObject(0, "PanelSpace");
+		if (*(DWORD *)0x6F346C > 12){
+			b3d::SetCaseSwitch_s(GearKeyAddressC, 12);
 		}
-
-		if (GearKeyAddressC == 0){
-			GearKeyAddressC = b3d::FindGameObject(0, "GearKey");
-		}
-		if (AvtoKeyAddressC == 0){
-			AvtoKeyAddressC = b3d::FindGameObject(0, "AvtoKey");
-		}
-		if (FuelLampKeyAddress == 0){
-			FuelLampKeyAddress = b3d::FindGameObject(0, "FuelLampKey");
-		}
-		if (KMeter0KeyAddress == 0){
-			KMeter0KeyAddress = b3d::FindGameObject(0, "KMeter0Key");
-		}
-		if (KMeter1KeyAddress == 0){
-			KMeter1KeyAddress = b3d::FindGameObject(0, "KMeter1Key");
-		}
-		if (KMeter2KeyAddress == 0){
-			KMeter2KeyAddress = b3d::FindGameObject(0, "KMeter2Key");
-		}
-		if (KMeter3KeyAddress == 0){
-			KMeter3KeyAddress = b3d::FindGameObject(0, "KMeter3Key");
-		}
-		if (KMeter4KeyAddress == 0){
-			KMeter4KeyAddress = b3d::FindGameObject(0, "KMeter4Key");
-		}
-
-		if (ParkKeyAddress == 0){
-			ParkKeyAddress = b3d::FindGameObject(0, "ParkKey");
-		}
-		if (TrailerKeyAddress == 0){
-			TrailerKeyAddress = b3d::FindGameObject(0, "TrailerKey");
-		}
-
-		if (TachoSpaceAddress == 0){
-			TachoSpaceAddress = b3d::FindGameObject(0, "TachoSpace");
-		}
-		if (SpeedSpaceAddress == 0){
-			SpeedSpaceAddress = b3d::FindGameObject(0, "SpeedSpace");
-		}
-		if (FuelArrowSpaceAddress == 0){
-			FuelArrowSpaceAddress = b3d::FindGameObject(0, "FuelArrowSpace");
-		}
-
-		//pos 1st
-
-		if (UseCustomRes == "on"){
-			Vector3D panel_pos;
-			panel_pos.x = -1;
-			panel_pos.y = 0;
-			panel_pos.z = -0.8;
-
-			if (xres == 1360 || xres == 1366 || yres == 900 || yres == 800 || yres == 720){
-				panel_pos.z = -0.65;
-			}
-
-			if (BlockSpace::GetPosition(PanelSpace).z != panel_pos.z){
-				BlockSpace::Move(PanelSpace, panel_pos, 1);
-			}
-		}
-
-		//Speed, Tacho, Fuel
-		float rpm_r = (*(float *)(playerVehicle + 20968) * 0.60000002);
-
-		//float speedCoeff = 2.25;
-		float _speed = 0;
-		if (speed <= 120){
-			_speed = (speed * SpeedCoeff);
-		}
-		else{
-			_speed = (120 * SpeedCoeff);
-		}
-
-		//float tachoCoeff = 10.8;
-		float _tacho = 0;
-		if (rpm_r <= 25.0){
-			_tacho = (rpm_r * TachoCoeff);
-		}
-		else{
-			_tacho = (25.0 * TachoCoeff);
-		}
-
-		//float fuelCoeff = 135;
-		float _fuelArrow = (fuelLevel * FuelCoeff);
-
-		if (SpeedSpaceAddress != 0){
-			Vector3D speed_v; speed_v.x = 0; speed_v.y = _speed; speed_v.z = 0;
-			BlockSpace::Rotate(SpeedSpaceAddress, speed_v, 0);
-		}
-		if (TachoSpaceAddress != 0){
-			Vector3D tacho_v; tacho_v.x = 0; tacho_v.y = _tacho; tacho_v.z = 0;
-			BlockSpace::Rotate(TachoSpaceAddress, tacho_v, 0);
-		}
-		if (FuelArrowSpaceAddress != 0){
-			Vector3D fuel_v; fuel_v.x = 0; fuel_v.y = _fuelArrow; fuel_v.z = 0;
-			BlockSpace::Rotate(FuelArrowSpaceAddress, fuel_v, 0);
-		}
-		//
-
-
-		//GearKey
-		if (GearKeyAddressC != 0)
-		{			
-			if (*(DWORD *)0x6F346C <= 12){
-				b3d::SetCaseSwitch_s(GearKeyAddressC, *(DWORD *)0x6F346C);
-			}
-			if (*(DWORD *)0x6F346C > 12){
-				b3d::SetCaseSwitch_s(GearKeyAddressC, 12);
-			}
-		}
-		//
-
-		//KMeter
-		int kilometrage;
-		kilometrage = ((int)(*(float *)(playerVehicle + 20980)));
-
-		int v4 = kilometrage;
-		int a5 = v4 / 100000;
-		int v29 = v4 % 100000 / 10000;
-		int v30 = (v4 - 10000 * (v29 + 10 * (v4 / 100000))) / 1000;
-		int v31 = (v4 - 1000 * (v30 + 10 * (v29 + 10 * (v4 / 100000)))) / 100;
-		int v32 = (v4 - 100 * (v31 + 10 * (v30 + 10 * (v29 + 10 * (v4 / 100000))))) / 10;
-
-		b3d::SetCaseSwitch_s(KMeter0KeyAddress, v32);
-		b3d::SetCaseSwitch_s(KMeter1KeyAddress, v31);
-		b3d::SetCaseSwitch_s(KMeter2KeyAddress, v30);
-		b3d::SetCaseSwitch_s(KMeter3KeyAddress, v29);
-		b3d::SetCaseSwitch_s(KMeter4KeyAddress, a5);
-		//
-
-		//FuelLamp
-		if ( fuelLevel < 0.20 ){
-			b3d::SetCaseSwitch_s(FuelLampKeyAddress, 1);
-		}
-		if ( fuelLevel > 0.20 ){
-			b3d::SetCaseSwitch_s(FuelLampKeyAddress, 0);
-		}
-		//
-
-		//ParkKey, AvtoKey
-		b3d::SetCaseSwitch_s(ParkKeyAddress, (int)*(DWORD *)0x6F3348);
-		b3d::SetCaseSwitch_s(AvtoKeyAddressC, *(DWORD *)0x6F3470);
-		//
 	}
+	//
+
+	//KMeter
+	int kilometrage;
+	kilometrage = ((int)(*(float *)(playerVehicle + 20980)));
+
+	int v4 = kilometrage;
+	int a5 = v4 / 100000;
+	int v29 = v4 % 100000 / 10000;
+	int v30 = (v4 - 10000 * (v29 + 10 * (v4 / 100000))) / 1000;
+	int v31 = (v4 - 1000 * (v30 + 10 * (v29 + 10 * (v4 / 100000)))) / 100;
+	int v32 = (v4 - 100 * (v31 + 10 * (v30 + 10 * (v29 + 10 * (v4 / 100000))))) / 10;
+
+	b3d::SetCaseSwitch_s(KMeter0KeyAddress, v32);
+	b3d::SetCaseSwitch_s(KMeter1KeyAddress, v31);
+	b3d::SetCaseSwitch_s(KMeter2KeyAddress, v30);
+	b3d::SetCaseSwitch_s(KMeter3KeyAddress, v29);
+	b3d::SetCaseSwitch_s(KMeter4KeyAddress, a5);
+	//
+
+	//FuelLamp
+	if ( fuelLevel < 0.20 ){
+		b3d::SetCaseSwitch_s(FuelLampKeyAddress, 1);
+	}
+	if ( fuelLevel > 0.20 ){
+		b3d::SetCaseSwitch_s(FuelLampKeyAddress, 0);
+	}
+	//
+
+	//ParkKey, AvtoKey
+	b3d::SetCaseSwitch_s(ParkKeyAddress, (int)*(DWORD *)0x6F3348);
+	b3d::SetCaseSwitch_s(AvtoKeyAddressC, *(DWORD *)0x6F3470);
+	//
 }
 
 void AutoIndicatorsSwitch()
@@ -1242,7 +1203,7 @@ void CustomRes(){
 	IsGUIFixed = true;
 }
 
-void ReadParamsFromIni(){ //reading parameters from ini, to know that functions we need to run
+void ReadParamsFromIni(){
 	if (UseCustomRes == "none"){
 		UseCustomRes = ReadBooleanFromIni("COMMON", "UseCustomRes", "off", ".\\SEMod.ini");
 	}
@@ -1264,9 +1225,19 @@ void ReadParamsFromIni(){ //reading parameters from ini, to know that functions 
 	if (DebugMode == "none"){
 		DebugMode = ReadBooleanFromIni("COMMON", "DebugMode", "off", ".\\SEMod.ini");
 	}
+
+	if (SpeedCoeff == 0){
+		SpeedCoeff = GetPrivateProfileFloat("COMMON", "SpeedCoeff", "2.25", ".\\SEMod.ini");
+	}
+	if (TachoCoeff == 0){
+		TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
+	}
+	if (FuelCoeff == 0){
+		FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
+	}
 }
 
-void RunFunctions(){
+void InitFunctions(){
 	if (UseCustomRes == "on") {
 		if (IsGUIFixed == false){
 			CustomRes();
@@ -1286,12 +1257,11 @@ void RunFunctions(){
 	A_Signals();
 	A_Interiors();
 	Cargo();
+	Helicopter();
 
 	if (GetAsyncKeyState(0x4F) & 0x8000){
 		GameTimer();
 	}
-
-	Helicopter();
 }
 
 void SetValues(){
@@ -1303,6 +1273,8 @@ void SetValues(){
 	vehicleID = *(DWORD *)(Viewer + 104);
 	xres = *(DWORD*)0x69688C;
 	yres = *(DWORD*)0x696890;
+
+	AreValuesSet = true;
 }
 
 void ResetValues(){
@@ -1325,100 +1297,24 @@ void ResetValues(){
 	TrailerKeyAddress = 0;
 
 	IsGUIFixed = false;
-}
-
-void DrawDebugGUI(int *CWinApp){ //nw
-	typedef int(*drawdebuggui)(int* CWinApp);
-	int ret = drawdebuggui(0x5E1C90)(CWinApp); //выводит отладочный текст
-}
-//(char *a1, int a2, signed int a3, _DWORD *a4, char *a5, int a6, int a7)
-
-void DrawText2D(DWORD* surface, int x, int y, DWORD* font, const char* text, int color, int IsRealColor){
-	typedef int(*DrawText2D)(DWORD* surface, int x, int y, DWORD* font, const char* text, int color, int IsRealColor);
-	int ret = DrawText2D(0x5EA110)(surface, x, y, font, text, color, IsRealColor);
-}
-
-void DrawHUD(){
-	typedef int(*DrawHUD)();
-	int ret = DrawHUD(0x56CDD0)();
-}
-
-void sub_5EA110(char *surface, int x, int y, DWORD *font, char *text, unsigned int color, int is_real_color){
-	typedef int(*sub_5EA110)(char *surface, int x, int y, DWORD *font, char *text, unsigned int color, int is_real_color);
-	int ret = sub_5EA110(0x5EA110)(surface, x, y, font, text, color, is_real_color);
-}
-			 //(int *surface, int x, int y, int propLen, CFont *font, char *text, unsigned int color, int realColor)
-void sub_5EA150(char *surface, int x, int y, int propLen, DWORD *font, char *text, int color, int is_real_color){
-	typedef int(*sub_5EA150)(char *surface, int x, int y, int propLen, DWORD *font, char* text, int color, int is_real_color);
-	int ret = sub_5EA150(0x5EA150)(surface, x, y, propLen, font, text, color, is_real_color);
-}
-
-//void DrawText2D_(DWORD* surface, int x, int y, DWORD* font, char* text, int color, int IsRealColor){
-//	typedef int(*DrawText2D)(DWORD* surface, int x, int y, DWORD* font, char* text, int color, int IsRealColor);
-//	int ret = DrawText2D(0x5EA150)(surface, x, y, font, text, color, IsRealColor);
-//}
-
-void test_func(){
-	/*
-	//int* CWinApp = (int*)(Viewer + 0x24);
-	DWORD dword_69686C = *(DWORD*)(0x69686C);
-	DWORD* surface = (DWORD*)(dword_69686C + 12);
-
-
-
-	//const char* text = "TEXT";
-	DWORD* font = (DWORD*)(0x6CED48); //0x6CED4C //0x6CED44
-
-	char text[30];
-	strcpy(text, "test text");
-
-	sub_5EA110(((char *)((unsigned __int16 **)0x69686C)[3]), 150, 150, *(DWORD **)(0x6F3458 + 1288), text, 5u, 0);
-	//DrawText2D(surface, 800, 65, font, text, 6, 0);
-	//panelPrint((char*)text);
-	*/
-
-
-	int* v2 = (int *)0x69686C;
-	int v3;
-	signed int v4;
-
-	v3 = (*(int (__thiscall **)(int *))(*v2 + 20))(v2);
-	v4 = -10;
-	if ( v3 <= 1204 ){
-		if ( v3 <= 800 ){
-			if ( v3 > 640 ){
-			v4 = 70;
-			}
-		}
-	}
-	else{
-		v4 = 469;
-	}
-
-	sub_5EA110((char *)v2[3], v4 + 26, 23, (DWORD*)(0x6CED48), "test", 0, 0);
-
-
-
-
-
-
-
-
-
-
-
-
-	if (GetAsyncKeyState(0x4E) & 0x8000){
-		//DrawHUD();
-		//panelPrint((char*)to_string(CWinApp[0]).c_str());
-		//DrawText2D(surface, 800, 65, font, text, 0, 0);
-		panelPrint("test");
-		//DrawDebugGUI(CWinApp);
-	}
+	AreValuesSet = false;
 }
 
 void PrintDebugInfo()
 {
+	time_t tt; 
+	struct tm * ti; 
+	time (&tt); 
+	ti = localtime(&tt); 
+	
+	char buffer[255];
+
+	sprintf(buffer, "SEMod 1.2 (271219) %s", asctime(ti));
+
+
+	PrintUserLog((char*)buffer);
+
+	//PrintUserLog(asctime(ti));
 	PrintUserLog("-----------------INFO:----------------");
 	PrintUserLog((char *)(("xres: ") + to_string(xres)).c_str());
 	PrintUserLog((char *)(("yres: ") + to_string(yres)).c_str());
@@ -1430,10 +1326,10 @@ void PrintDebugInfo()
 	PrintUserLog("---------------OFFSETS:---------------");
 	PrintUserLog((char *)(("Viewer: ") + to_string(Viewer)).c_str());
 	PrintUserLog((char *)(("Player vehicle: ") + to_string(playerVehicle)).c_str());
-	PrintUserLog((char *)(("Vehicle task: ") + to_string(VehicleTask)).c_str());
+	PrintUserLog((char *)(("Vehicle task: ") + to_string(*(DWORD *)(playerVehicle + 16))).c_str());
 	PrintUserLog((char *)(("Car_V: ") + to_string(Car_V)).c_str());
 	PrintUserLog("\n");
-	PrintUserLog("Panel:================================");
+	PrintUserLog("Panel:");
 	PrintUserLog((char *)(("PanelKey: ") + to_string(PanelKey)).c_str());
 	PrintUserLog((char *)(("PanelSpace: ") + to_string(PanelSpace)).c_str());
 	PrintUserLog((char *)(("GearKeyAddressC: ") + to_string(GearKeyAddressC)).c_str());
@@ -1450,9 +1346,10 @@ void PrintDebugInfo()
 	PrintUserLog((char *)(("ParkKeyAddress: ") + to_string(ParkKeyAddress)).c_str());
 	PrintUserLog((char *)(("TrailerKeyAddress: ") + to_string(TrailerKeyAddress)).c_str());
 	PrintUserLog("\n");
+	PrintUserLog("\n");
 }
 
-void Init()
+void GetInput()
 {
 	if (IsKeyPressed(0xBE)) {
 		if (!keyPressed) {
@@ -1501,18 +1398,26 @@ void Init()
 	else {
 		keyPressed = false;
 	}
+}
 
-
+void Init()
+{
 	if (*(DWORD *)0x6D2098 == 0) {
 		ResetValues();
 	}
 	else{
-		SetValues();
+		if (AreValuesSet == false){
+			SetValues();
+		}
 	}
 
+	GetInput();
 	//test_func();
 	ReadParamsFromIni();
-	RunFunctions();
+
+	if (Viewer != 0){
+		InitFunctions();
+	}
 }
 
 //typedef void*(__thiscall *newxz)(DWORD a1, void *a2);
