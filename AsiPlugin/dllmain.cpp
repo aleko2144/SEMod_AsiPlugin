@@ -13,6 +13,7 @@
 #include "new_structures.h"
 #include "BlockSpace.h"
 #include "b3d.h"
+#include "GameApp.h"
 
 using namespace std;
 
@@ -113,12 +114,6 @@ void PrintUserLog(const char *text)
 	}
 }
 
-void panelPrint(char* text)
-{
-	typedef int(*textcall2)(void* a1);
-	int ret = textcall2(0x484050)(text); //выводит текст на панель
-}
-
 bool CircleCheck(float circle_x, float camera_x, float circle_y, float camera_y, float circle_radius)
 {
 	return sqrt((circle_x - camera_x) * (circle_x - camera_x) + (circle_y - camera_y) * (circle_y - camera_y)) <= circle_radius;
@@ -154,7 +149,7 @@ void Camera()
 	if (GetAsyncKeyState(0x08) && 0x8000)
 	{
 		string camera_local = ((to_string(camera_local_x)) + " " + (to_string(camera_local_y)).c_str());
-		panelPrint((char*)camera_local.c_str());
+		GameApp::DisplayScreenMessage((char*)camera_local.c_str());
 	}
 
 	if (camera_local_x > 15)
@@ -215,7 +210,7 @@ void GameTimer()
 		sprintf(buffer, "%d:%d", hour, minute);
 	}
 
-	panelPrint((char*)buffer);
+	GameApp::DisplayScreenMessage((char*)buffer);
 }
 
 void CheckAndSetVariableInt(int* offset, int value){
@@ -250,6 +245,31 @@ float GetPrivateProfileFloat(string selection, string varname, string default_va
 	return to_return;
 }
 
+int playerVehicle_offset_static = 0;
+
+bool IsVehicleChanged()
+{
+	int viewer = *(DWORD *)0x6D2098;
+	bool IsVehicleChanged = false;
+
+	if (playerVehicle_offset_static == 0){
+		playerVehicle_offset_static = *(DWORD *)(viewer + 616);
+	}
+
+	int playerVehicle_current = *(DWORD *)(viewer + 616);
+
+	if (playerVehicle_offset_static != playerVehicle_current){
+		playerVehicle_offset_static = playerVehicle_current;
+		//GameApp::DisplayScreenMessage("произошла смена транспорта");
+		IsVehicleChanged = true;
+	}
+	else{
+		IsVehicleChanged = false;
+	}
+
+	return IsVehicleChanged;
+}
+
 void Intro()
 {
 	SI_timer -= 1;
@@ -267,22 +287,22 @@ void Intro()
 		string mod = "Авторы модификации: aleko2144, Motika, и многие другие.\nvk.com/rnr_mods";
 		string end = "Удачи!";
 		if (SI_timer == 1800){
-			panelPrint((char *)hello.c_str());
+			GameApp::DisplayScreenMessage((char *)hello.c_str());
 		}
 		if (SI_timer == 1500){
-			panelPrint((char *)next_func.c_str());
+			GameApp::DisplayScreenMessage((char *)next_func.c_str());
 		}
 		if (SI_timer == 1100){
-			panelPrint((char *)camera.c_str());
+			GameApp::DisplayScreenMessage((char *)camera.c_str());
 		}
 		if (SI_timer == 800){
-			panelPrint((char *)ind.c_str());
+			GameApp::DisplayScreenMessage((char *)ind.c_str());
 		}
 		if (SI_timer == 500){
-			panelPrint((char *)mod.c_str());
+			GameApp::DisplayScreenMessage((char *)mod.c_str());
 		}
 		if (SI_timer == 200){
-			panelPrint((char *)end.c_str());
+			GameApp::DisplayScreenMessage((char *)end.c_str());
 		}
 		if (SI_timer == 100){
 			WritePrivateProfileStringA("COMMON", "ShowIntro", "off", ".\\SEMod.ini");
@@ -298,22 +318,22 @@ void Intro()
 		string mod = "Mod by aleko2144, Motika, and many others.\nVisit vk.com/rnr_mods to get more information.";
 		string end = "Good luck!";
 		if (SI_timer == 1800){
-			panelPrint((char *)hello.c_str());
+			GameApp::DisplayScreenMessage((char *)hello.c_str());
 		}
 		if (SI_timer == 1500){
-			panelPrint((char *)next_func.c_str());
+			GameApp::DisplayScreenMessage((char *)next_func.c_str());
 		}
 		if (SI_timer == 1100){
-			panelPrint((char *)camera.c_str());
+			GameApp::DisplayScreenMessage((char *)camera.c_str());
 		}
 		if (SI_timer == 800){
-			panelPrint((char *)ind.c_str());
+			GameApp::DisplayScreenMessage((char *)ind.c_str());
 		}
 		if (SI_timer == 500){
-			panelPrint((char *)mod.c_str());
+			GameApp::DisplayScreenMessage((char *)mod.c_str());
 		}
 		if (SI_timer == 200){
-			panelPrint((char *)end.c_str());
+			GameApp::DisplayScreenMessage((char *)end.c_str());
 		}
 		if (SI_timer == 100){
 			WritePrivateProfileStringA("COMMON", "ShowIntro", "off", ".\\SEMod.ini");
@@ -429,7 +449,7 @@ void Helicopter()
 			if (k50BS != 0){
 				car_rot = BlockSpace::GetAngles(BlockSpace);
 
-				//panelPrint((char *) (to_string(car_rot.x) + " " + to_string(car_rot.y) + " " + to_string(car_rot.z)).c_str());
+				//GameApp::DisplayScreenMessage((char *) (to_string(car_rot.x) + " " + to_string(car_rot.y) + " " + to_string(car_rot.z)).c_str());
 
 				float accel_x = 0;
 				float accel_y = 0;
@@ -546,9 +566,9 @@ void Helicopter()
 			}
 		}
 
-		//panelPrint((char *) (to_string(Matrix[0]) + " " + to_string(Matrix[1]) + " " + to_string(Matrix[2]) + "\n" + to_string(Matrix[3]) + " " + to_string(Matrix[4]) + " " + to_string(Matrix[5]) + "\n" + to_string(Matrix[6]) + " " + to_string(Matrix[7]) + " " + to_string(Matrix[8]) + "\n" + to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11]) + "\n").c_str());
-		//panelPrint((char *) (to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11])).c_str());
-		// panelPrint((char *) (to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11]) + " par: " + to_string(ProcessPhy)).c_str());
+		//GameApp::DisplayScreenMessage((char *) (to_string(Matrix[0]) + " " + to_string(Matrix[1]) + " " + to_string(Matrix[2]) + "\n" + to_string(Matrix[3]) + " " + to_string(Matrix[4]) + " " + to_string(Matrix[5]) + "\n" + to_string(Matrix[6]) + " " + to_string(Matrix[7]) + " " + to_string(Matrix[8]) + "\n" + to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11]) + "\n").c_str());
+		//GameApp::DisplayScreenMessage((char *) (to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11])).c_str());
+		// GameApp::DisplayScreenMessage((char *) (to_string(Matrix[9]) + " " + to_string(Matrix[10]) + " " + to_string(Matrix[11]) + " par: " + to_string(ProcessPhy)).c_str());
 	}
 }
 
@@ -556,9 +576,13 @@ void A_Cam()
 {
 	if (Viewer != 0)
 	{
+		//int CamRightKey = sub_530010((DWORD *)0x6D1DD8, 27);
+		int CamZoomInKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 24);
+		int CamZoomOutKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 25);
+		//GameApp::DisplayScreenMessage((char *)to_string(CamRightKey).c_str());
 		/*if (GetAsyncKeyState(0x50) & 0x8000)
 		{
-			panelPrint((char *)to_string(cam_rot).c_str());
+			GameApp::DisplayScreenMessage((char *)to_string(cam_rot).c_str());
 		}
 
 		//PrintUserLog(to_string(cam_rot).c_str());
@@ -587,13 +611,8 @@ void A_Cam()
 		//	PrintUserLog((char *)("x_w: " + to_string(p.x) + " y_w: " + to_string(p.y)).c_str());
 		//}
 		RECT desktop;
-		// Get a handle to the desktop window
 		const HWND hDesktop = GetDesktopWindow();
-		// Get the size of screen to the variable desktop
 		GetWindowRect(hDesktop, &desktop);
-		// The top left corner will have coordinates (0,0)
-		// and the bottom right corner will have coordinates
-		// (horizontal, vertical)
 		int horizontal = desktop.right;
 		int vertical = desktop.bottom;
 
@@ -610,7 +629,7 @@ void A_Cam()
 			//PrintUserLog((char *)("test: " + to_string(mouse_x)).c_str());
 		}
 
-		mouse_x = -mouse_x/(MouseSens * 100);
+		mouse_x = -mouse_x * MouseSens * 0.006;
 
 
 		/*int Viewer = *(DWORD *)0x6D2098;
@@ -624,7 +643,7 @@ void A_Cam()
 		float angles((float)0x697888 + (2416*((*(DWORD *)0x6D2098) + 104) + 2116));
 		float angles1( (Tech + (2416*vehicleID) + 0x844 + 24) );
 		//(to_string(angles) + " " + to_string(angles1)).c_str())
-		panelPrint((char*)(to_string(angles).c_str()));*/
+		GameApp::DisplayScreenMessage((char*)(to_string(angles).c_str()));*/
 
 		if (mouse_x < 1.00) //1.570796371
 		{
@@ -652,15 +671,42 @@ void A_Cam()
 			MouseSens = atof(returnedStr);
 		}
 
-		float pos = 0;
+		/*
+		double car_x = *(DOUBLE *)0x68BAD0;
+		double car_y = *(DOUBLE *)0x68BAD8;
+		double car_z = *(DOUBLE *)0x68BAE0;
+		float camera_x = *(float *)0x6F69AC;
+		float camera_y = *(float *)0x6F69B0;
+		float camera_z = *(float *)0x6F69B4;
 
-		pos = (mouse_y / (MouseSens * 10));
+		float circle_x = car_x;
+		float circle_y = car_y;
+		float circle_radius = 10;
 
+		bool IsCameraOnCircle = false;
+
+		float coeff = ((vertical - p.y)/50);
+
+		if(CircleCheck(circle_x, camera_x, circle_y, camera_y, coeff))
+		{
+			//PrintUserLog((char *)"camera on circle");
+			//PrintUserLog("\n");
+			IsCameraOnCircle = true;
+		}
+		else
+		{
+			//PrintUserLog((char *)"camera not on circle");
+			//PrintUserLog("\n");
+			IsCameraOnCircle = false;
+		}
+		*/
 
 		if (ML_IntView == "on")
 		{
 			*(float *)0x696D30 = -cam_rot;
 		}
+
+		//int cameraMode = *(DWORD *)(viewer + 1400);
 
 		if (ML_OutView == "on")
 		{
@@ -669,20 +715,25 @@ void A_Cam()
 			float max_zoom = mid_zoom - 5;
 			float min_zoom = mid_zoom + 5;
 
-			if (GetAsyncKeyState(0x24) & 0x8000){ //home key
+			if (CamZoomInKeyState == 1){ //home key ; GetAsyncKeyState(0x24) & 0x8000
 					zoom += 0.025;
 			}
-			if (GetAsyncKeyState(0x23) & 0x8000){ //end key
+			if (CamZoomOutKeyState == 1){ //end key ; GetAsyncKeyState(0x23) & 0x8000
 					zoom -= 0.025;
 			}
 
 			float camera_zoom = (min_zoom + zoom * (max_zoom - min_zoom));
-			
-			if (speed > 20){
+
+			if (cameraMode == 0){
+				zoom = 0.5;
+			}
+			else{
 				*(double *)0x6F69F0 = camera_zoom;
 			}
 
-			panelPrint((char*)(to_string(zoom)).c_str());
+			//viewer + 1400 = cammode
+			//viewer + 1424 = cameramatrix (0x30)
+			//GameApp::DisplayScreenMessage((char*)(to_string(zoom)).c_str());
 
 			//*(double *)0x6F69F0 = pos; //zoom
 			//*(double *)0x6F69F8 = -mouse_x; //camera_rotation
@@ -690,8 +741,15 @@ void A_Cam()
 	}
 }
 
+float AnmInt_FuelCoeff = 0;
+float AnmInt_EcoCoeff = 0;
+float AnmInt_EcoMaxDeg = 0;
+float AnmInt_AKBCoeff = 0;
+float AnmInt_AKBMaxDeg = 0;
+
 void A_Interiors()
 {
+
 	if (Viewer != 0){
 		int cameraMode = *(DWORD *)(Viewer + 1400);
 
@@ -710,8 +768,27 @@ void A_Interiors()
 
 		int LightsState = *(DWORD *)(playerVehicle + 20920);
 
+		if (AnmInt_FuelCoeff == 0 || IsVehicleChanged() == true){
+			AnmInt_FuelCoeff = GetPrivateProfileFloat(sResult, "FuelCoeff", "0", ".\\SEMod.ini"); //90
+		}
 
-		int cameraMatrix = *(DWORD *)(Viewer + 1424); //+1424
+		if (AnmInt_EcoCoeff == 0 || IsVehicleChanged() == true){
+			AnmInt_EcoCoeff = GetPrivateProfileFloat(sResult, "EcoCoeff", "0", ".\\SEMod.ini"); //1.68
+		}
+
+		if (AnmInt_EcoMaxDeg == 0 || IsVehicleChanged() == true){
+			AnmInt_EcoMaxDeg = GetPrivateProfileFloat(sResult, "EcoMaxDeg", "0", ".\\SEMod.ini"); //76
+		}
+
+		if (AnmInt_AKBCoeff == 0 || IsVehicleChanged() == true){
+			AnmInt_AKBCoeff = GetPrivateProfileFloat(sResult, "AKBCoeff", "0", ".\\SEMod.ini"); //-1.68
+		}
+
+		if (AnmInt_AKBMaxDeg == 0 || IsVehicleChanged() == true){
+			AnmInt_AKBMaxDeg = GetPrivateProfileFloat(sResult, "AKBMaxDeg", "0", ".\\SEMod.ini"); //60
+		}
+
+		int cameraMatrix = *(DWORD *)(Viewer + 1424); //+1424 
 
 		int AKBSpaceI = 0;
 		int ECOSpaceI = 0;
@@ -727,14 +804,37 @@ void A_Interiors()
 		double speed = (double)*(double *)(*(DWORD *)(playerVehicle + 21600) + 13100);
 		float rpm_r = (*(float *)(playerVehicle + 20968) * 0.60000002);
 
-		AKBSpaceI = b3d::FindGameObject(0, (sResult + "AKBSpace").c_str());
-		ECOSpaceI = b3d::FindGameObject(0, (sResult + "EcoSpace").c_str());
-		OilSpaceI = b3d::FindGameObject(0, (sResult + "OilSpace").c_str());
-		FuelSpaceI = b3d::FindGameObject(0, (sResult + "FuelSpace").c_str());
-		CEKeyI = b3d::FindGameObject(0, (sResult + "CEKey").c_str());
-		LightsKeyI = b3d::FindGameObject(0, (sResult + "LightsKey").c_str());
-		ParkKeyI = b3d::FindGameObject(0, (sResult + "ParkKey").c_str());
-		PriborKeyI = b3d::FindGameObject(0, (sResult + "PriborKey").c_str());
+		if (AKBSpaceI == 0 || IsVehicleChanged() == true){
+			AKBSpaceI = b3d::FindGameObject(0, (sResult + "AKBSpace").c_str());
+		}
+
+		if (ECOSpaceI == 0 || IsVehicleChanged() == true){
+			ECOSpaceI = b3d::FindGameObject(0, (sResult + "EcoSpace").c_str());
+		}
+
+		if (OilSpaceI == 0 || IsVehicleChanged() == true){
+			OilSpaceI = b3d::FindGameObject(0, (sResult + "OilSpace").c_str());
+		}
+
+		if (FuelSpaceI == 0 || IsVehicleChanged() == true){
+			FuelSpaceI = b3d::FindGameObject(0, (sResult + "FuelSpace").c_str());
+		}
+
+		if (CEKeyI == 0 || IsVehicleChanged() == true){
+			CEKeyI = b3d::FindGameObject(0, (sResult + "CEKey").c_str());
+		}
+
+		if (LightsKeyI == 0 || IsVehicleChanged() == true){
+			LightsKeyI = b3d::FindGameObject(0, (sResult + "LightsKey").c_str());
+		}
+
+		if (ParkKeyI == 0 || IsVehicleChanged() == true){
+			ParkKeyI = b3d::FindGameObject(0, (sResult + "ParkKey").c_str());
+		}
+
+		if (PriborKeyI == 0 || IsVehicleChanged() == true){
+			PriborKeyI = b3d::FindGameObject(0, (sResult + "PriborKey").c_str());
+		}
 
 		if (PriborKeyI != 0)
 		{
@@ -764,13 +864,21 @@ void A_Interiors()
 		if (ECOSpaceI != 0)
 		{
 			float rpm_eco;
-			float rpm_eco_coeff = 1.688888888888889;
+			float rpm_eco_coeff = AnmInt_EcoCoeff;
 				
 			rpm_eco = rpm_r*rpm_eco_coeff;
 
-			if (rpm_eco > 76)
-			{
-				rpm_eco = 76;
+			if (AnmInt_EcoMaxDeg > 0){
+				if (rpm_eco > AnmInt_EcoMaxDeg)
+				{
+					rpm_eco = AnmInt_EcoMaxDeg;
+				}
+			}
+			else if (AnmInt_EcoMaxDeg < 0){
+				if (rpm_eco < AnmInt_EcoMaxDeg)
+				{
+					rpm_eco = AnmInt_EcoMaxDeg;
+				}
 			}
 
 			Vector3D eco; eco.x = 0; eco.y = rpm_eco; eco.z = 0;
@@ -780,13 +888,21 @@ void A_Interiors()
 		if (AKBSpaceI != 0)
 		{
 			float rpm_AKB;
-			float AKB_coeff = -1.688888888888889;
+			float AKB_coeff = AnmInt_AKBCoeff;
 				
 			rpm_AKB = rpm_r*AKB_coeff - 30;
 
-			if (rpm_AKB < -60)
-			{
-				rpm_AKB = -60;
+			if (AnmInt_AKBMaxDeg > 0){
+				if (rpm_AKB > AnmInt_AKBMaxDeg)
+				{
+					rpm_AKB = AnmInt_AKBMaxDeg;
+				}
+			}
+			else if (AnmInt_AKBMaxDeg < 0){
+				if (rpm_AKB < AnmInt_AKBMaxDeg)
+				{
+					rpm_AKB = AnmInt_AKBMaxDeg;
+				}
 			}
 
 			Vector3D AKB; AKB.x = 0; AKB.y = rpm_AKB; AKB.z = 0;
@@ -796,7 +912,7 @@ void A_Interiors()
 		if (FuelSpaceI != 0)
 		{
 			float _fuel;
-			float fuel_coeff = 90;
+			float fuel_coeff = AnmInt_FuelCoeff;
 				
 			if (rpm_r != 0)
 			{
@@ -809,6 +925,16 @@ void A_Interiors()
 
 			Vector3D Fuel; Fuel.x = 0; Fuel.y = _fuel; Fuel.z = 0;
 			BlockSpace::Rotate(FuelSpaceI, Fuel, 0);
+		}
+
+		if (CEKeyI != 0){
+			if (*(float *)(playerVehicle + 0x10 + 0x51F0) != 0.0){
+				b3d::SetCaseSwitch_s(CEKeyI, 1);
+			}
+			else
+			{
+				b3d::SetCaseSwitch_s(CEKeyI, 0);
+			}
 		}
 	}
 }
@@ -832,11 +958,12 @@ void Panel()
 	DWORD speed_r = v125;
 	double speed = v125;
 
+	PanelSpace = b3d::FindGameObject(0, "PanelSpace");
+
 	if (DisplayPanel == "on"){
 		PanelKey = b3d::FindGameObject(0, "PanelKey");
-		PanelSpace = b3d::FindGameObject(0, "PanelSpace");
 
-		if (cameraMode == 0){
+		if (*(DWORD *)(*(DWORD *)0x6D2098 + 1400) == 0){
 			b3d::SetCaseSwitch_s(PanelKey, 0); 
 		}
 		else{
@@ -991,11 +1118,34 @@ void Panel()
 	//
 }
 
+bool IND_enabled = false;
+bool IsIndicatorsFlashingNow = false;
+bool IsTurnSignalRLighting = false;
+bool IsTurnSignalLLighting = false;
+
+bool IsCounterAtMinPosition = false;
+
+void IndicatorsSND()
+{
+	if (Viewer != 0)
+	{
+		if (counter == 1.0 && IND_enabled == true)
+		{
+			GameApp::PlaySound_(GameApp::SearchResourceSND("ind_0Sound"), 1.0, 1.0);
+		}
+
+		if (counter < 0.5 && counter > 0.48 && IND_enabled == true)
+		{
+			GameApp::PlaySound_(GameApp::SearchResourceSND("ind_1Sound"), 1.0, 1.0);
+		}
+	}
+}
+
 void AutoIndicatorsSwitch()
 {
 	int ProcessPhy = *(int *)(playerVehicle + 0x10 + 0x100 + 0x74);
 	float rule_rot = *(float *)(Car_V + 0x29E0);
-	//panelPrint((char*)(to_string(rule_rot).c_str()));
+	//GameApp::DisplayScreenMessage((char*)(to_string(rule_rot).c_str()));
 	if (rule_rot < -0.5){
 		AutoTSRState = true;
 	}
@@ -1013,6 +1163,24 @@ void AutoIndicatorsSwitch()
 
 void A_Signals()
 {
+	if (TurnSignalRState == true || TurnSignalLState == true)
+	{
+		IND_enabled = true;
+	}
+	else
+	{
+		IND_enabled = false;
+	}
+
+	if (IsTurnSignalRLighting == true || IsTurnSignalLLighting == true)
+	{
+		IsIndicatorsFlashingNow = true;
+	}
+	else
+	{
+		IsIndicatorsFlashingNow = false;
+	}
+
 	if (Viewer != 0)
 	{
 		int Viewer = *(DWORD *)0x6D2098;
@@ -1020,13 +1188,15 @@ void A_Signals()
 
 		int vehicleID = *(DWORD *)(Viewer + 104);
 
+		int ProcessPhy = *(int *)(playerVehicle + 0x10 + 0x100 + 0x74);
+
 		TurnSignalRAddress = 0;
 		TurnSignalLAddress = 0;
 		string sResult(((char *)0x697888 + (2416*vehicleID) + 2342));
 		TurnSignalRAddress = b3d::FindGameObject(0, (sResult + "TurnSignalR").c_str());
 		TurnSignalLAddress = b3d::FindGameObject(0, (sResult + "TurnSignalL").c_str());
 
-		//panelPrint((char *)(((const char *)sResult.c_str())));
+		//GameApp::DisplayScreenMessage((char *)(((const char *)sResult.c_str())));
 
 		int TurnSignalR_IAddress = 0;
 		int TurnSignalL_IAddress = 0;
@@ -1050,11 +1220,13 @@ void A_Signals()
 				{
 					b3d::SetCaseSwitch_s(TurnSignalRAddress, 1);
 					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 1); }
+					IsTurnSignalRLighting = true;
 				}
 				else
 				{
 					b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
 					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
+					IsTurnSignalRLighting = false;
 				}
 			}
 		}
@@ -1073,11 +1245,13 @@ void A_Signals()
 				{
 					b3d::SetCaseSwitch_s(TurnSignalRAddress, 1);
 					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 1); }
+					IsTurnSignalRLighting = true;
 				}
 				else
 				{
 					b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
 					if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
+					IsTurnSignalRLighting = false;
 				}
 			}
 		}
@@ -1087,6 +1261,7 @@ void A_Signals()
 			{
 				b3d::SetCaseSwitch_s(TurnSignalRAddress, 0);
 				if (TurnSignalR_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalR_IAddress, 0); }
+				IsTurnSignalRLighting = false;
 			}
 		}
 		
@@ -1112,11 +1287,13 @@ void A_Signals()
 				{
 					b3d::SetCaseSwitch_s(TurnSignalLAddress, 1);
 					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 1); }
+					IsTurnSignalLLighting = true;
 				}
 				else
 				{
 					b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
 					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
+					IsTurnSignalLLighting = false;
 				}
 			}
 		}
@@ -1135,11 +1312,13 @@ void A_Signals()
 				{
 					b3d::SetCaseSwitch_s(TurnSignalLAddress, 1);
 					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 1); }
+					IsTurnSignalLLighting = true;
 				}
 				else
 				{
 					b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
 					if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
+					IsTurnSignalLLighting = false;
 				}
 			}
 		}
@@ -1149,6 +1328,7 @@ void A_Signals()
 			{
 				b3d::SetCaseSwitch_s(TurnSignalLAddress, 0);
 				if (TurnSignalL_IAddress != 0) { b3d::SetCaseSwitch_s(TurnSignalL_IAddress, 0); }
+				IsTurnSignalLLighting = false;
 			}
 		}
 	}
@@ -1237,30 +1417,196 @@ void ReadParamsFromIni(){
 	}
 }
 
+int trailerState = 0;
+int IsTrailerAttached = -1;
+
+/*
+void AdvancedSounds()
+{
+	if (Viewer != 0)
+	{
+		int trailerState0 = *(DWORD*)0x18C84C; //1 = detached, 0 = attached
+		//int trailerState1 = *(DWORD*)0x18DD74;
+
+		BYTE trailerState1 = *(BYTE*)0x18DD74;
+
+		//trailerState = trailerState1;
+
+		int IsTrailerAttached_1 = 0;
+
+		if (trailerState1 == 0){
+			IsTrailerAttached_1 = 0;
+		}
+		else {
+			IsTrailerAttached_1 = 1;
+		}
+
+		GameApp::DisplayScreenMessage((char*)(to_string(IsTrailerAttached)).c_str());
+		//GameApp::DisplayPagerMessage((char*)(to_string(trailerState1)).c_str());
+
+		if (IsTrailerAttached != IsTrailerAttached_1){
+			IsTrailerAttached = IsTrailerAttached_1;
+
+			GameApp::DisplayPagerMessage("trailer attached");
+			GameApp::PlaySound_(GameApp::SearchResourceSND("trailer_attachSound"), 1.0, 1.0);
+			//IsTrailerAttached = true;
+		}
+		//else{
+		//	//IsTrailerAttached = false;
+		//}
+	}
+}
+*/
+
+int time_counter = 0;
+
+void PlaySoundTest(int soundFile, float a2, float a3)
+{
+	typedef int(*PlaySoundLocated)(int soundFile, float a2, float a3);
+	int ret = PlaySoundLocated(0x52F800)(soundFile, a2, a3);
+}
+
+void AdvancedSounds()
+{
+	if (Viewer != 0)
+	{
+		int trailerState0 = *(DWORD*)0x18C84C; //1 = detached, 0 = attached
+
+		//GameApp::DisplayScreenMessage((char*)(to_string(GameApp::GetActionState((DWORD *)0x6D1DD8, 23))).c_str());
+
+		if (GameApp::GetActionState((DWORD *)0x6D1DD8, 23) == 1) //lights key
+		{
+			GameApp::PlaySound_(GameApp::SearchResourceSND("buttonSound"), 1.0, 1.0);
+		}
+
+		if (GameApp::GetActionState((DWORD *)0x6D1DD8, 22) == 1) //handbrake key
+		{
+			GameApp::PlaySound_(GameApp::SearchResourceSND("handbrakeSound"), 1.0, 1.0);
+		}
+
+		if (GameApp::GetActionState((DWORD *)0x6D1DD8, 40) == 1) //trailer attach key
+		{
+			GameApp::PlaySound_(GameApp::SearchResourceSND("trailer_attachSound"), 1.0, 1.0);
+		}
+
+		time_t seconds;
+
+		seconds = time(NULL);
+	
+		//char buffer[255];
+
+		//sprintf(buffer, "%s", seconds);
+
+		//GameApp::DisplayScreenMessage((char*)(to_string(seconds)).c_str());
+
+		if (GameApp::GetActionState((DWORD *)0x6D1DD8, 0x21) == 1) //accel key 0
+		{
+			//PlaySoundTest(GameApp::SearchResourceSND("hornupgrSound"), 95.0, 0.5);
+
+			//Vector3D Vehicle_pos;
+
+			Vector3D Vehicle_pos;
+			Vehicle_pos.x = 1043.94;
+			Vehicle_pos.y = -875.31;
+			Vehicle_pos.z = 60.00;
+
+			float position[3];
+			position[0] = 1043.94;
+			position[1]= -875.31;
+			position[2] = 60.00;
+
+
+			//int *pos_ptr = &position;
+
+			//Vehicle_pos.x = 1043.94;
+			//Vehicle_pos.y = -875.31;
+			//Vehicle_pos.z = 60.00;
+
+			/*
+			Vehicle_pos.x = *(float *)0x6F69AC;
+			Vehicle_pos.y = *(float *)0x6F69B0;
+			Vehicle_pos.z = *(float *)0x6F69B4;
+			*/
+
+			/*
+			float Vector_pos[3];
+
+			Vector_pos[0] = 1043.94;
+			Vector_pos[1]= -875.31;
+			Vector_pos[2] = 60.00;
+
+			byte Position[12];
+
+			for(unsigned i=0; i < 3; ++i)
+				Position[i] = static_cast<unsigned char>(Vector_pos[i]);
+			*/
+
+
+
+			float *pointer = &position[0];
+
+			int position1[3];
+			position1[0] = 1149402644;
+			position1[1]= -1000680489;
+			position1[2] = 1114636288;
+
+			int *pos_ptr = position1;
+
+			int playerID = GameApp::GetPlayerID();
+			double playerCapital = GameApp::GetPlayerCapital(playerID);
+
+			GameApp::DisplayScreenMessage((char*)(to_string(playerCapital).c_str()));
+			//PrintUserLog((char*)(to_string(playerID).c_str()));
+		}
+
+
+		//if (IsTrailerAttached != IsTrailerAttached_1){
+		//	IsTrailerAttached = IsTrailerAttached_1;
+		//
+		//	GameApp::DisplayPagerMessage("trailer attached");
+		//	GameApp::PlaySound_(GameApp::SearchResourceSND("trailer_attachSound"), 1.0, 1.0);
+		//}
+	}
+}
+
 void InitFunctions(){
 	if (UseCustomRes == "on") {
 		if (IsGUIFixed == false){
 			CustomRes();
+			//PrintUserLog("dllmain.cpp - custom res");
 		}
 	}
 	if (AutoInd == "on") {
 		AutoIndicatorsSwitch();
+		//PrintUserLog("dllmain.cpp - autoind switcher");
 	}
 	if (ML_OutView == "on" || ML_IntView == "on"){
 		A_Cam();
+		//PrintUserLog("dllmain.cpp - camera func");
 	}
 	if (ShowIntro == "on"){
 		Intro();
+		//PrintUserLog("dllmain.cpp - intro");
 	}
 
 	Panel();
+	//PrintUserLog("dllmain.cpp - panel()");
 	A_Signals();
+	//PrintUserLog("dllmain.cpp - vehicle indicators");
+	IndicatorsSND();
+	//PrintUserLog("dllmain.cpp - indicators sounds");
 	A_Interiors();
+	//PrintUserLog("dllmain.cpp - interiors func");
+	AdvancedSounds();
+	//
 	Cargo();
+	//PrintUserLog("dllmain.cpp - cargo func");
 	Helicopter();
+	//PrintUserLog("dllmain.cpp - helicopter");
 
 	if (GetAsyncKeyState(0x4F) & 0x8000){
 		GameTimer();
+		//PrintUserLog("dllmain.cpp - gametimer");
 	}
 }
 
@@ -1268,7 +1614,6 @@ void SetValues(){
 	Viewer = *(DWORD *)0x6D2098;
 	playerVehicle = *(DWORD *)(Viewer + 616);
 	VehicleTask = *(DWORD *)(playerVehicle + 16);
-	cameraMode = *(DWORD *)(Viewer + 1400);
 	Car_V = *(DWORD *)(playerVehicle + 21600);
 	vehicleID = *(DWORD *)(Viewer + 104);
 	xres = *(DWORD*)0x69688C;
@@ -1300,6 +1645,65 @@ void ResetValues(){
 	AreValuesSet = false;
 }
 
+//void DrawDebugGUI(int *CWinApp){ //nw
+//	typedef int(*drawdebuggui)(int* CWinApp);
+//	int ret = drawdebuggui(0x5E1C90)(CWinApp); //выводит отладочный текст
+//}
+////(char *a1, int a2, signed int a3, _DWORD *a4, char *a5, int a6, int a7)
+//
+//void DrawText2D(DWORD* surface, int x, int y, DWORD* font, const char* text, int color, int IsRealColor){
+//	typedef int(*DrawText2D)(DWORD* surface, int x, int y, DWORD* font, const char* text, int color, int IsRealColor);
+//	int ret = DrawText2D(0x5EA110)(surface, x, y, font, text, color, IsRealColor);
+//}
+//
+//void DrawHUD(){
+//	typedef int(*DrawHUD)();
+//	int ret = DrawHUD(0x56CDD0)();
+//}
+//
+//void sub_5EA110(char *surface, int x, int y, DWORD *font, char *text, unsigned int color, int is_real_color){
+//	typedef int(*sub_5EA110)(char *surface, int x, int y, DWORD *font, char *text, unsigned int color, int is_real_color);
+//	int ret = sub_5EA110(0x5EA110)(surface, x, y, font, text, color, is_real_color);
+//}
+//			 //(int *surface, int x, int y, int propLen, CFont *font, char *text, unsigned int color, int realColor)
+//void sub_5EA150(char *surface, int x, int y, int propLen, DWORD *font, char *text, int color, int is_real_color){
+//	typedef int(*sub_5EA150)(char *surface, int x, int y, int propLen, DWORD *font, char* text, int color, int is_real_color);
+//	int ret = sub_5EA150(0x5EA150)(surface, x, y, propLen, font, text, color, is_real_color);
+//}
+
+void DrawText2D_(DWORD* surface, int x, int y, DWORD* font, char* text, int color, int IsRealColor){
+	typedef int(*DrawText2D)(DWORD* surface, int x, int y, DWORD* font, char* text, int color, int IsRealColor);
+	int ret = DrawText2D(0x5EA150)(surface, x, y, font, text, color, IsRealColor);
+}
+
+void DrawHUD(){
+	typedef int(*DrawHUD)();
+	int ret = DrawHUD(0x56CDD0)();
+}
+
+void DrawText2D(int* surface, int x, int y, int* font, char* text, unsigned int color, int IsRealColor){
+	typedef int(*DrawText2D)(int* surface, int x, int y, int* font, char* text, unsigned int color, int IsRealColor);
+	int ret = DrawText2D(0x5EA110)(surface, x, y, font, text, color, IsRealColor);
+}
+
+int *sub_5EF5F0(int *a1)
+{
+	typedef int*(*sub_5EF5F0)(int *a1);
+	int *result = sub_5EF5F0(0x5EF5F0)(a1);
+	return result;
+}
+
+void test_sound_func()
+{
+	//playerVehicle + 10 + 51EC - fuel level (normalized)
+	if (IsKeyPressed(0x4E)) 
+	{
+		GameApp::PlaySound_(GameApp::SearchResourceSND("trailer_attachSound"), 1.0, 1.0);
+		int trailerState = (*(DWORD *)(0x6D2098 + 616) + 4);
+		GameApp::DisplayScreenMessage((char*)(to_string(trailerState)).c_str());
+	}
+}
+
 void PrintDebugInfo()
 {
 	time_t tt; 
@@ -1309,7 +1713,7 @@ void PrintDebugInfo()
 	
 	char buffer[255];
 
-	sprintf(buffer, "SEMod 1.2 (271219) %s", asctime(ti));
+	sprintf(buffer, "SEMod 1.2 (020220) %s", asctime(ti));
 
 
 	PrintUserLog((char*)buffer);
@@ -1346,6 +1750,19 @@ void PrintDebugInfo()
 	PrintUserLog((char *)(("ParkKeyAddress: ") + to_string(ParkKeyAddress)).c_str());
 	PrintUserLog((char *)(("TrailerKeyAddress: ") + to_string(TrailerKeyAddress)).c_str());
 	PrintUserLog("\n");
+	PrintUserLog("---------------Switch:----------------");
+	PrintUserLog((char *)(("PanelKey: ") + to_string(*(int*)b3d::GetCaseSwitch(PanelKey))).c_str());
+	PrintUserLog((char *)(("GearKeyAddressC: ") + to_string(*(int*)b3d::GetCaseSwitch(GearKeyAddressC))).c_str());
+	PrintUserLog((char *)(("AvtoKeyAddressC: ") + to_string(*(int*)b3d::GetCaseSwitch(AvtoKeyAddressC))).c_str());
+	PrintUserLog((char *)(("FuelLampKeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(FuelLampKeyAddress))).c_str());
+	PrintUserLog((char *)(("KMeter0KeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(KMeter0KeyAddress))).c_str());
+	PrintUserLog((char *)(("KMeter1KeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(KMeter1KeyAddress))).c_str());
+	PrintUserLog((char *)(("KMeter2KeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(KMeter2KeyAddress))).c_str());
+	PrintUserLog((char *)(("KMeter3KeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(KMeter3KeyAddress))).c_str());
+	PrintUserLog((char *)(("KMeter4KeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(KMeter4KeyAddress))).c_str());
+	PrintUserLog((char *)(("ParkKeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(ParkKeyAddress))).c_str());
+	PrintUserLog((char *)(("TrailerKeyAddress: ") + to_string(*(int*)b3d::GetCaseSwitch(TrailerKeyAddress))).c_str());
+	PrintUserLog("\n");
 	PrintUserLog("\n");
 }
 
@@ -1357,6 +1774,12 @@ void GetInput()
 			if (!TurnSignalLState) { 
 				TurnSignalRState = !TurnSignalRState;
 				counter = 1;
+				if (TurnSignalRState == true){
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+				}
+				else{
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+				}
 			}
 		}
 	}
@@ -1366,6 +1789,12 @@ void GetInput()
 			if (!TurnSignalRState) { 
 				TurnSignalLState = !TurnSignalLState; 
 				counter = 1;
+				if (TurnSignalLState == true){
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+				}
+				else{
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+				}
 			}
 		}
 	}
@@ -1402,21 +1831,27 @@ void GetInput()
 
 void Init()
 {
-	if (*(DWORD *)0x6D2098 == 0) {
+	if (*(DWORD *)0x6D2098 == 0 || IsVehicleChanged() == true) {
 		ResetValues();
+		//PrintUserLog("dllmain.cpp - values reseted");
 	}
 	else{
 		if (AreValuesSet == false){
 			SetValues();
+			//PrintUserLog("dllmain.cpp - values set");
 		}
 	}
 
 	GetInput();
+	//PrintUserLog("dllmain.cpp - getInput");
 	//test_func();
 	ReadParamsFromIni();
 
 	if (Viewer != 0){
 		InitFunctions();
+		test_sound_func();
+		cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
+		//PrintUserLog("dllmain.cpp - InitFunctions");
 	}
 }
 
