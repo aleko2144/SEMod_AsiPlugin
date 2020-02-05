@@ -22,6 +22,13 @@ namespace b3d
 		return (int *)result;
 	}
 
+	int SearchBlock(int *parent, char *name, char *a3)
+	{
+		typedef int(*searchObject)(int *a1, char *a2, char *a3);
+		int result = searchObject(0x4E47F0)(parent, name, a3);
+		return result;
+	}
+
 	int *SearchGameObject(int *parent, char *name, int a3)
 	{
 		typedef int(*findObject)(int *a1, int *a2, int a3);
