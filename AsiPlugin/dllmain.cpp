@@ -18,14 +18,14 @@ int yres;
 int use_kmph;
                     //
 
-// поворотники //
+// РїРѕРІРѕСЂРѕС‚РЅРёРєРё //
 int *TurnSignalRAddress; //trucks.b3d
 int *TurnSignalLAddress;
 int *TurnSignalR_IAddress; //cabines.b3d
 int *TurnSignalL_IAddress;
 
 
-// салоны //
+// СЃР°Р»РѕРЅС‹ //
 float AnmInt_FuelCoeff;
 float AnmInt_EcoCoeff;
 float AnmInt_EcoMaxDeg;
@@ -98,19 +98,19 @@ void PrintWarnLog(const char *text)
 class CVehicle
 {
 public:
-	int m_offset;        //указатель на машину игрока
-	int m_task;          //параметры автомобиля
-	int m_Car_V;         //данные машины игрока из tech
-	string m_car_prefix;    //префикс автомобиля
-	string m_cab_prefix;    //префикс салона
-	double m_speed_ms;   //скорость автомобиля игрока, м/с
+	int m_offset;        //СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°С€РёРЅСѓ РёРіСЂРѕРєР°
+	int m_task;          //РїР°СЂР°РјРµС‚СЂС‹ Р°РІС‚РѕРјРѕР±РёР»СЏ
+	int m_Car_V;         //РґР°РЅРЅС‹Рµ РјР°С€РёРЅС‹ РёРіСЂРѕРєР° РёР· tech
+	string m_car_prefix;    //РїСЂРµС„РёРєСЃ Р°РІС‚РѕРјРѕР±РёР»СЏ
+	string m_cab_prefix;    //РїСЂРµС„РёРєСЃ СЃР°Р»РѕРЅР°
+	double m_speed_ms;   //СЃРєРѕСЂРѕСЃС‚СЊ Р°РІС‚РѕРјРѕР±РёР»СЏ РёРіСЂРѕРєР°, Рј/СЃ
 	double m_speed;
 	float m_rpm;
 	double m_fuelLevel;
 	float m_damageLevel;
 	int m_kilometrage;
 	int m_currentGear;
-	int m_vehicleID;      //ID из vehicle.tech
+	int m_vehicleID;      //ID РёР· vehicle.tech
 
 	CVehicle()
 	{
@@ -181,26 +181,26 @@ public:
 class CPanel
 {
 public:
-	int *PanelKey;      //переключатель отображения панели
-	int *PanelSpace;    //локатор панели
+	int *PanelKey;      //РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°РЅРµР»Рё
+	int *PanelSpace;    //Р»РѕРєР°С‚РѕСЂ РїР°РЅРµР»Рё
 
-	int *GearKeyAddress; //текущая передача
-	int *AvtoKeyAddress; //АКПП/МКПП
-	int *FuelLampKeyAddress; //датчик низкого уровня топлива
-	int *KMeter0KeyAddress;  //одометр[0]
-	int *KMeter1KeyAddress;  //одометр[1]
-	int *KMeter2KeyAddress;  //одометр[2]
-	int *KMeter3KeyAddress;  //одометр[3]
-	int *KMeter4KeyAddress;  //одометр[4]
+	int *GearKeyAddress; //С‚РµРєСѓС‰Р°СЏ РїРµСЂРµРґР°С‡Р°
+	int *AvtoKeyAddress; //РђРљРџРџ/РњРљРџРџ
+	int *FuelLampKeyAddress; //РґР°С‚С‡РёРє РЅРёР·РєРѕРіРѕ СѓСЂРѕРІРЅСЏ С‚РѕРїР»РёРІР°
+	int *KMeter0KeyAddress;  //РѕРґРѕРјРµС‚СЂ[0]
+	int *KMeter1KeyAddress;  //РѕРґРѕРјРµС‚СЂ[1]
+	int *KMeter2KeyAddress;  //РѕРґРѕРјРµС‚СЂ[2]
+	int *KMeter3KeyAddress;  //РѕРґРѕРјРµС‚СЂ[3]
+	int *KMeter4KeyAddress;  //РѕРґРѕРјРµС‚СЂ[4]
 
-	int *TachoSpaceAddress;  //локатор стрелки тахометра
-	int *SpeedSpaceAddress;  //локатор стрелки спидометра
-	int *FuelArrowSpaceAddress; //локатор стрелки уровня топлива
+	int *TachoSpaceAddress;  //Р»РѕРєР°С‚РѕСЂ СЃС‚СЂРµР»РєРё С‚Р°С…РѕРјРµС‚СЂР°
+	int *SpeedSpaceAddress;  //Р»РѕРєР°С‚РѕСЂ СЃС‚СЂРµР»РєРё СЃРїРёРґРѕРјРµС‚СЂР°
+	int *FuelArrowSpaceAddress; //Р»РѕРєР°С‚РѕСЂ СЃС‚СЂРµР»РєРё СѓСЂРѕРІРЅСЏ С‚РѕРїР»РёРІР°
 
-	int *ParkKeyAddress; //локатор лампы стояночного тормоза
-	int *TrailerKeyAddress; //локатор лампы полуприцепа (похоже, что в версиях после 4.0, поддержка TrailerKey отсутствует)
+	int *ParkKeyAddress; //Р»РѕРєР°С‚РѕСЂ Р»Р°РјРїС‹ СЃС‚РѕСЏРЅРѕС‡РЅРѕРіРѕ С‚РѕСЂРјРѕР·Р°
+	int *TrailerKeyAddress; //Р»РѕРєР°С‚РѕСЂ Р»Р°РјРїС‹ РїРѕР»СѓРїСЂРёС†РµРїР° (РїРѕС…РѕР¶Рµ, С‡С‚Рѕ РІ РІРµСЂСЃРёСЏС… РїРѕСЃР»Рµ 4.0, РїРѕРґРґРµСЂР¶РєР° TrailerKey РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚)
 
-	float SpeedCoeff; //= макс. угол поворота стрелки / макс. значение шкалы
+	float SpeedCoeff; //= РјР°РєСЃ. СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р° СЃС‚СЂРµР»РєРё / РјР°РєСЃ. Р·РЅР°С‡РµРЅРёРµ С€РєР°Р»С‹
 	float TachoCoeff;
 	float FuelCoeff;
 	CPanel()
