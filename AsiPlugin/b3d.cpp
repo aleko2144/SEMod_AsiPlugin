@@ -22,10 +22,10 @@ namespace b3d
 		return (int *)result;
 	}
 
-	int SearchBlock(int *parent, char *name, char *a3)
+	int *SearchBlock(int *parent, char *name, char *a3)
 	{
-		typedef int(*searchObject)(int *a1, char *a2, char *a3);
-		int result = searchObject(0x4E47F0)(parent, name, a3);
+		typedef int*(*SearchBlock)(int *a1, char *a2, char *a3);
+		int *result = SearchBlock(0x4E47F0)(parent, name, a3);
 		return result;
 	}
 
