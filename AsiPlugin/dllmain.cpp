@@ -24,14 +24,6 @@ int *TurnSignalLAddress;
 int *TurnSignalR_IAddress; //cabines.b3d
 int *TurnSignalL_IAddress;
 
-
-// салоны //
-float AnmInt_FuelCoeff;
-float AnmInt_EcoCoeff;
-float AnmInt_EcoMaxDeg;
-float AnmInt_AKBCoeff;
-float AnmInt_AKBMaxDeg;
-
 // SEMod.ini //
 bool DisplayPanel = false;
 bool AutoInd = false;
@@ -44,6 +36,7 @@ bool IsGUIFixed = false;
 bool ML_IntView = false;
 bool ML_OutView = false;
 bool WriteDebugLog = false;
+bool WriteWarnLog = false;
 
 float MouseSens = 0.0;
 float zoom = 0.5;
@@ -86,12 +79,15 @@ void PrintDebugLog(const char *text)
 }
 void PrintWarnLog(const char *text)
 {
-	FILE *file = fopen("SEMod_warn.log", "a");
-	if (file != NULL)
+	if (WriteWarnLog)
 	{
-		fputs(text, file);
-		fputs("\n", file);
-		fclose(file);
+		FILE *file = fopen("SEMod_warn.log", "a");
+		if (file != NULL)
+		{
+			fputs(text, file);
+			fputs("\n", file);
+			fclose(file);
+		}
 	}
 }
 
@@ -111,6 +107,31 @@ public:
 	int m_kilometrage;
 	int m_currentGear;
 	int m_vehicleID;      //ID из vehicle.tech
+	int m_lightsState;
+	int m_handbrakeState;
+	///салоны///
+	int *m_AKBSpaceI;
+	int *m_ECOSpaceI;
+	int *m_OilSpaceI;
+	int *m_FuelSpaceI;
+	int *m_CEKeyI;
+	int *m_LightsKeyI;
+	int *m_ParkKeyI;
+	int *m_PriborKeyI;
+	float m_AnmInt_FuelCoeff;
+	float m_AnmInt_EcoCoeff;
+	float m_AnmInt_EcoMaxDeg;
+	float m_AnmInt_AKBCoeff;
+	float m_AnmInt_AKBMaxDeg;
+	///-----///
+	float m_mass;
+	float m_massMax;
+	int *m_CargoKey;
+	///////////
+	int *m_TurnSignalRAddress;
+	int *m_TurnSignalLAddress;
+	int *m_TurnSignalR_IAddress;
+	int *m_TurnSignalL_IAddress;
 
 	CVehicle()
 	{
@@ -127,6 +148,31 @@ public:
 		m_kilometrage = 0;
 		m_currentGear = 0;
 		m_vehicleID = 0;
+		m_lightsState = 0;
+		m_handbrakeState = 0;
+		/////
+		m_AKBSpaceI = 0;
+		m_ECOSpaceI = 0;
+		m_OilSpaceI = 0;
+		m_FuelSpaceI = 0;
+		m_CEKeyI = 0;
+		m_LightsKeyI = 0;
+		m_ParkKeyI = 0;
+		m_PriborKeyI = 0;
+		m_AnmInt_FuelCoeff = 0;
+		m_AnmInt_EcoCoeff = 0;
+		m_AnmInt_EcoMaxDeg = 0;
+		m_AnmInt_AKBCoeff = 0;
+		m_AnmInt_AKBMaxDeg = 0;
+		/////
+		m_mass = 0;
+		m_massMax = 0;
+		m_CargoKey = 0;
+		/////////////
+		m_TurnSignalRAddress = 0;
+		m_TurnSignalLAddress = 0;
+		m_TurnSignalR_IAddress = 0;
+		m_TurnSignalL_IAddress = 0;
 	}
 	void Clear()
 	{
@@ -143,11 +189,36 @@ public:
 		m_kilometrage = 0;
 		m_currentGear = 0;
 		m_vehicleID = 0;
+		m_lightsState = 0;
+		m_handbrakeState = 0;
+		/////
+		m_AKBSpaceI = 0;
+		m_ECOSpaceI = 0;
+		m_OilSpaceI = 0;
+		m_FuelSpaceI = 0;
+		m_CEKeyI = 0;
+		m_LightsKeyI = 0;
+		m_ParkKeyI = 0;
+		m_PriborKeyI = 0;
+		m_AnmInt_FuelCoeff = 0;
+		m_AnmInt_EcoCoeff = 0;
+		m_AnmInt_EcoMaxDeg = 0;
+		m_AnmInt_AKBCoeff = 0;
+		m_AnmInt_AKBMaxDeg = 0;
+		/////
+		m_mass = 0;
+		m_massMax = 0;
+		m_CargoKey = 0;
+		////////
+		m_TurnSignalRAddress = 0;
+		m_TurnSignalLAddress = 0;
+		m_TurnSignalR_IAddress = 0;
+		m_TurnSignalL_IAddress = 0;
 	}
 	void Reset()
 	{
 		m_offset = *(int *)(Viewer + 0x268);
-		m_task = *(int *)(m_offset + 0x10);
+		m_task = (m_offset + 0x10);
 		m_Car_V = *(int *)(m_offset + 21600);
 		m_vehicleID = *(int *)(Viewer + 104);
 		m_car_prefix = (((char *)0x697888 + (2416 * m_vehicleID) + 2342)); //.c_str();
@@ -159,6 +230,71 @@ public:
 		m_damageLevel = 0;
 		m_kilometrage = 0;
 		m_currentGear = 0;
+		m_lightsState = 0;
+		m_handbrakeState = 0;
+		/////
+		m_AKBSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "AKBSpace").c_str());
+		m_ECOSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "EcoSpace").c_str());
+		m_OilSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "OilSpace").c_str());
+		m_FuelSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "FuelSpace").c_str());
+		m_CEKeyI = b3d::FindGameObject(0, (m_cab_prefix + "CEKey").c_str());
+		m_LightsKeyI = b3d::FindGameObject(0, (m_cab_prefix + "LightsKey").c_str());
+		m_ParkKeyI = b3d::FindGameObject(0, (m_cab_prefix + "ParkKey").c_str());
+		m_PriborKeyI = b3d::FindGameObject(0, (m_cab_prefix + "PriborKey").c_str());
+		m_AnmInt_FuelCoeff = GetPrivateProfileFloat(m_cab_prefix, "FuelCoeff", "0", ".\\SEMod.ini");
+		m_AnmInt_EcoCoeff = GetPrivateProfileFloat(m_cab_prefix, "EcoCoeff", "0", ".\\SEMod.ini");
+		m_AnmInt_EcoMaxDeg = GetPrivateProfileFloat(m_cab_prefix, "EcoMaxDeg", "0", ".\\SEMod.ini");
+		m_AnmInt_AKBCoeff = GetPrivateProfileFloat(m_cab_prefix, "AKBCoeff", "0", ".\\SEMod.ini");
+		m_AnmInt_AKBMaxDeg = GetPrivateProfileFloat(m_cab_prefix, "AKBMaxDeg", "0", ".\\SEMod.ini");
+		/////
+		m_mass = 0;
+		m_massMax = GetPrivateProfileIntA("CARGO", (m_car_prefix + "Mass").c_str(), 0, ".\\SEMod.ini");
+		m_CargoKey = b3d::FindGameObject(0, (m_car_prefix + "CargoKey").c_str());
+		/////
+		m_TurnSignalRAddress = b3d::FindGameObject(0, (m_car_prefix + "TurnSignalR").c_str());
+		m_TurnSignalLAddress = b3d::FindGameObject(0, (m_car_prefix + "TurnSignalL").c_str());
+		m_TurnSignalR_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalR_I").c_str());
+		m_TurnSignalL_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalL_I").c_str());
+
+		if (!m_AKBSpaceI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
+		}
+		if (!m_ECOSpaceI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "EcoSpace").c_str());
+		}
+		if (!m_OilSpaceI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "OilSpace").c_str());
+		}
+		if (!m_FuelSpaceI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "FuelSpace").c_str());
+		}
+		if (!m_CEKeyI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "CEKey").c_str());
+		}
+		if (!m_LightsKeyI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "LightsKey").c_str());
+		}
+		if (!m_ParkKeyI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "ParkKey").c_str());
+		}
+		if (!m_PriborKeyI){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "PriborKey").c_str());
+		}
+		if (!m_CargoKey){
+			PrintWarnLog((char*)("Not found " + m_car_prefix + "CargoKey").c_str());
+		}
+		if (!m_TurnSignalRAddress){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalR").c_str());
+		}
+		if (!m_TurnSignalLAddress){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalL").c_str());
+		}
+		if (!m_TurnSignalR_IAddress){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalR_I").c_str());
+		}
+		if (!m_TurnSignalL_IAddress){
+			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalL_I").c_str());
+		}
 	}
 	void Update()
 	{
@@ -166,15 +302,131 @@ public:
 		m_speed_ms = *(float *)(*(DWORD *)(m_offset + 21600) + 13100);
 		m_rpm = *(float *)(m_offset + 20968) * 0.60000002;
 		m_fuelLevel = *(float *)(m_offset + 20988);
-		m_damageLevel = *(float *)(m_offset + 0x10 + 0x51F0);
+		m_damageLevel = *(float *)(m_task + 0x51F0);
 		m_kilometrage = ((int)(*(float *)(m_offset + 20980)));
 		m_currentGear = *(DWORD *)0x6F346C;
+		m_lightsState = *(DWORD *)(m_offset + 20920);
+		m_handbrakeState = *(DWORD *)(m_task + 21004);
+		m_mass = *(float *)(m_Car_V + 0x2640);
 
 		if (use_kmph){
 			m_speed = m_speed_ms * 3.6;
 		}
 		else{
 			m_speed = m_speed_ms * 2.23694;
+		}
+
+		if (m_PriborKeyI)
+		{
+			if (m_lightsState == 0){
+				b3d::SetCaseSwitch_s(m_PriborKeyI, 0);
+			}
+			else{
+				b3d::SetCaseSwitch_s(m_PriborKeyI, 1);
+			}
+		}
+
+		if (m_LightsKeyI){
+			if (m_lightsState == 0){
+				b3d::SetCaseSwitch_s(m_LightsKeyI, 0);
+			}
+			else
+			{
+				b3d::SetCaseSwitch_s(m_LightsKeyI, 1);
+			}
+		}
+
+		if (m_ParkKeyI)
+		{
+			b3d::SetCaseSwitch_s(m_ParkKeyI, m_handbrakeState);
+		}
+
+		if (m_ECOSpaceI)
+		{
+			float rpm_eco;
+			float rpm_eco_coeff = m_AnmInt_EcoCoeff;
+				
+			rpm_eco = m_rpm*rpm_eco_coeff;
+
+			if (m_AnmInt_EcoMaxDeg > 0){
+				if (rpm_eco > m_AnmInt_EcoMaxDeg)
+				{
+					rpm_eco = m_AnmInt_EcoMaxDeg;
+				}
+			}
+			else if (m_AnmInt_EcoMaxDeg < 0){
+				if (rpm_eco < m_AnmInt_EcoMaxDeg)
+				{
+					rpm_eco = m_AnmInt_EcoMaxDeg;
+				}
+			}
+
+			Vector3D eco = {0, rpm_eco, 0};
+			BlockSpace::Rotate(m_ECOSpaceI, eco, 0);
+		}
+		
+		if (m_AKBSpaceI)
+		{
+			float rpm_AKB;
+			float AKB_coeff = m_AnmInt_AKBCoeff;
+				
+			rpm_AKB = m_rpm*AKB_coeff - 30;
+
+			if (m_AnmInt_AKBMaxDeg > 0){
+				if (rpm_AKB > m_AnmInt_AKBMaxDeg)
+				{
+					rpm_AKB = m_AnmInt_AKBMaxDeg;
+				}
+			}
+			else if (m_AnmInt_AKBMaxDeg < 0){
+				if (rpm_AKB < m_AnmInt_AKBMaxDeg)
+				{
+					rpm_AKB = m_AnmInt_AKBMaxDeg;
+				}
+			}
+
+			Vector3D AKB = {0, rpm_AKB, 0};
+			BlockSpace::Rotate(m_AKBSpaceI, AKB, 0);
+		}
+
+		if (m_FuelSpaceI)
+		{
+			float _fuel;
+			float fuel_coeff = m_AnmInt_FuelCoeff;
+				
+			if (m_rpm)
+			{
+				_fuel = m_fuelLevel * fuel_coeff;
+			}
+			else
+			{
+				_fuel = 0;
+			}
+
+			Vector3D Fuel = {0, _fuel, 0};
+			BlockSpace::Rotate(m_FuelSpaceI, Fuel, 0);
+		}
+
+		if (m_CEKeyI){
+			if (m_damageLevel != 0.0){
+				b3d::SetCaseSwitch_s(m_CEKeyI, 1);
+			}
+			else
+			{
+				b3d::SetCaseSwitch_s(m_CEKeyI, 0);
+			}
+		}
+
+		if (m_CargoKey && m_massMax)
+		{
+			if (m_massMax < m_mass)
+			{
+				b3d::SetCaseSwitch_s(m_CargoKey, 1);
+			}
+			else
+			{
+				b3d::SetCaseSwitch_s(m_CargoKey, 0);
+			}
 		}
 	}
 };
@@ -294,7 +546,7 @@ public:
 		}
 		//PrintDebugLog("CPanel.SetVisiblity()");
 	}
-	void Process(float c_speed, float c_rpm, float c_fuelLevel, int c_kilometrage, int c_currentgear)
+	void Process(float c_speed, float c_rpm, float c_fuelLevel, int c_kilometrage, int c_currentgear, int c_handbrakeState)
 	{
 		int KMeter4Value = c_kilometrage / 100000;
 		int KMeter3Value = c_kilometrage % 100000 / 10000;
@@ -325,7 +577,7 @@ public:
 			}
 		}
 
-		b3d::SetCaseSwitch_s(ParkKeyAddress, *(int *)0x6F3348);
+		b3d::SetCaseSwitch_s(ParkKeyAddress, c_handbrakeState);
 		b3d::SetCaseSwitch_s(AvtoKeyAddress, *(int *)0x6F3470);
 
 		if (SpeedSpaceAddress){
@@ -377,6 +629,7 @@ void ReadParamsFromIni(){
 	//ShowIntro = ReadBooleanFromIni("COMMON", "ShowIntro", "off", ".\\SEMod.ini");
 	DebugMode = ReadBooleanFromIni("COMMON", "DebugMode", "off", ".\\SEMod.ini");
 	WriteDebugLog = ReadBooleanFromIni("COMMON", "WriteDebugLog", "off", ".\\SEMod.ini");
+	WriteWarnLog = ReadBooleanFromIni("COMMON", "WriteWarnLog", "off", ".\\SEMod.ini");
 	Panel.SpeedCoeff = GetPrivateProfileFloat("COMMON", "SpeedCoeff", "2.25", ".\\SEMod.ini");
 	Panel.TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
 	Panel.FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
@@ -434,15 +687,13 @@ void ResetValues(){
 
 	IsGUIFixed = false;
 	AreValuesSet = false;
-
-	PrintDebugLog("Vehicle.Reset(), Panel.Reset()");
 }
 
 void Update()
 {
 	cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
 	Vehicle.Update();
-	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear);
+	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
 }
 
 void Process()
@@ -472,11 +723,6 @@ void Process()
 				Panel.SetVisiblity(false);
 				//PrintDebugLog("Process() -  Panel.SetVisiblity(false)");
 			}
-		}
-
-		if (GetAsyncKeyState(0x4F) & 0x8000){
-			PrintDebugLog("Process() - test");
-			GameApp::DisplayScreenMessage((char*)(to_string(Vehicle.m_speed)).c_str());
 		}
 
 		if (!(Panel.PanelKey)){
