@@ -18,18 +18,12 @@ int yres;
 int use_kmph;
                     //
 
-// поворотники //
-int *TurnSignalRAddress; //trucks.b3d
-int *TurnSignalLAddress;
-int *TurnSignalR_IAddress; //cabines.b3d
-int *TurnSignalL_IAddress;
-
 // SEMod.ini //
 bool DisplayPanel = false;
 bool AutoInd = false;
 bool UseCustomRes = false;
-bool AutoTSRState = false;
-bool AutoTSLState = false;
+bool TurnSignalRState = false;
+bool TurnSignalLState = false;
 bool DebugMode = false;
 bool AreValuesSet = false;
 bool IsGUIFixed = false;
@@ -40,6 +34,9 @@ bool WriteWarnLog = false;
 
 float MouseSens = 0.0;
 float zoom = 0.5;
+
+int TS_TickCountStart = 0;
+bool is_indicators_flashed;
 
 using namespace std;
 
@@ -633,6 +630,75 @@ void ReadParamsFromIni(){
 	Panel.SpeedCoeff = GetPrivateProfileFloat("COMMON", "SpeedCoeff", "2.25", ".\\SEMod.ini");
 	Panel.TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
 	Panel.FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
+	MouseSens = GetPrivateProfileFloat("CAMERA", "MouseSens", "1.0", ".\\SEMod.ini");
+}
+
+bool IsKeyPressed(int key)
+{
+  return HIBYTE(GetKeyState(key)) == 0xFF;
+}
+
+void GetInput()
+{
+	if (IsKeyPressed(0xBE)) {
+		if (!keyPressed) {
+			keyPressed = true;
+			if (!TurnSignalLState) { 
+				TurnSignalRState = !TurnSignalRState;
+				if (TurnSignalRState == true){
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+				}
+				else{
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+				}
+				TS_TickCountStart = GetTickCount();
+			}
+		}
+	}
+	else if (IsKeyPressed(0xBC)) {
+		if (!keyPressed) {
+			keyPressed = true;
+			if (!TurnSignalRState) { 
+				TurnSignalLState = !TurnSignalLState; 
+				if (TurnSignalLState == true){
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+				}
+				else{
+					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+				}
+				TS_TickCountStart = GetTickCount();
+			}
+		}
+	}
+	/*else if (IsKeyPressed(0x43))
+	{
+		if (!keyPressed)
+		{
+			keyPressed = true;
+			DWORD Camera_state = *(DWORD *)0x6F6938;
+			if (Camera_state == 1)
+			{
+				*(DWORD *)0x6F6938 = 2;
+			}
+			else
+			{
+				*(DWORD *)0x6F6938 = 1;
+			}
+		}
+	}
+	else if (IsKeyPressed(0x79)) 
+	{
+		if (!keyPressed) 
+		{
+			keyPressed = true;
+			if (DebugMode){
+				PrintDebugInfo();
+			}
+		}
+	}*/
+	else {
+		keyPressed = false;
+	}
 }
 
 int playerVehicle_offset_static;
@@ -648,6 +714,134 @@ void CustomRes(){
 	MenuGasSpriteRectX[0] = (xres - 1024)/2;
 
 	IsGUIFixed = true;
+}
+
+float cam_rot = 0;
+
+void A_Cam()
+{
+	int CamZoomInKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 24);
+	int CamZoomOutKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 25);
+
+	RECT desktop;
+	const HWND hDesktop = GetDesktopWindow();
+	GetWindowRect(hDesktop, &desktop);
+	int horizontal = desktop.right;
+	int vertical = desktop.bottom;
+
+	float mouse_x = 0;
+	float mouse_y = 0;
+
+	POINT p;
+	if (GetCursorPos(&p))
+	{
+		//PrintUserLog((char *)("x: " + to_string(p.x) + " y: " + to_string(p.y)).c_str());
+		mouse_x = p.x - (horizontal/2);
+		mouse_y = p.y - (vertical/2);
+	}
+
+	mouse_x = -mouse_x * MouseSens * 0.006;
+
+
+	if (mouse_x < 1.00) //1.570796371
+	{
+		if (mouse_x > -0.90)
+		{
+			cam_rot = mouse_x;
+		}
+	}
+	if (ML_IntView)
+	{
+		*(float *)0x696D30 = -cam_rot;
+	}
+
+	if (ML_OutView)
+	{
+		float mid_zoom = 13.35 - 0.15 * ((int)Vehicle.m_speed - 1);
+
+		float max_zoom = mid_zoom - 5;
+		float min_zoom = mid_zoom + 5;
+
+		if (CamZoomInKeyState == 1){ //home key ; GetAsyncKeyState(0x24) & 0x8000
+				zoom += 0.025;
+		}
+		if (CamZoomOutKeyState == 1){ //end key ; GetAsyncKeyState(0x23) & 0x8000
+				zoom -= 0.025;
+		}
+
+		float camera_zoom = (min_zoom + zoom * (max_zoom - min_zoom));
+
+		if (cameraMode == 0){
+			zoom = 0.5;
+		}
+		else{
+			*(double *)0x6F69F0 = camera_zoom;
+		}
+	}
+}
+
+void A_Signals()
+{
+	bool TSR_lighting;
+	bool TSL_lighting;
+
+	if (TurnSignalRState)
+	{
+		if ((GetTickCount() - TS_TickCountStart) % 1000 < 300)
+		{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 1);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 1);
+		TSR_lighting = true;
+		}
+		else
+		{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 0);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 0);
+		TSR_lighting = false;
+		}
+	}
+	else
+	{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 0);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 0);
+		TSR_lighting = false;
+
+	}
+	
+	if (TurnSignalLState)
+	{
+		if ((GetTickCount() - TS_TickCountStart) % 1000 < 300)
+		{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 1);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 1);
+		TSL_lighting = true;
+		}
+		else
+		{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 0);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 0);
+		TSL_lighting = false;
+		}
+	}
+	else
+	{
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 0);
+		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 0);
+		TSL_lighting = false;
+	}
+
+	if (TSR_lighting || TSL_lighting) 
+	{
+		if (!is_indicators_flashed) 
+		{
+			is_indicators_flashed = true;
+			GameApp::PlaySound_(GameApp::SearchResourceSND("ind_relaySound"), 1.0, 1.0);
+		}
+	}
+	else {
+		is_indicators_flashed = false;
+	}
+
 }
 
 bool VehicleChanged()
@@ -694,48 +888,52 @@ void Update()
 	cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
 	Vehicle.Update();
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
+
+	if (ML_OutView || ML_IntView){
+		A_Cam();
+		PrintDebugLog("dllmain.cpp - camera func");
+	}
 }
 
 void Process()
 {
-	if (Viewer)
-	{
-		Update();
-		if (UseCustomRes) {
-			if (!IsGUIFixed){
-				CustomRes();
-				Panel.FixPosition();
-				PrintDebugLog("dllmain.cpp - custom res");
-			}
+	Update();
+	if (UseCustomRes) {
+		if (!IsGUIFixed){
+			CustomRes();
+			Panel.FixPosition();
+			PrintDebugLog("dllmain.cpp - custom res");
 		}
-		//PrintDebugLog("Process() -  Viewer != 0");
-		//cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
-		//PrintDebugLog((char*)(to_string(cameraMode)).c_str());
-		//Vehicle.Update();
-		//Vanel.Process(vehicle.speed, vehicle.rpm, vehicle.fuelLevel, vehicle.kilometrage, vehicle.currentGear);
-
-		if (DisplayPanel){
-			if (cameraMode != 0){
-				Panel.SetVisiblity(true);
-				//PrintDebugLog("Process() -  Panel.SetVisiblity(true)");
-			}
-			else{
-				Panel.SetVisiblity(false);
-				//PrintDebugLog("Process() -  Panel.SetVisiblity(false)");
-			}
-		}
-
-		if (!(Panel.PanelKey)){
-			Panel.Reset();
-			PrintDebugLog("Process() -  Panel.Reset()");
-		}
-
-		if (!(Vehicle.m_offset)){
-			Vehicle.Reset();
-			PrintDebugLog("Process() -  Vehicle.Reset()");
-		}
-		PrintDebugLog("Process() executed");
 	}
+	//PrintDebugLog("Process() -  Viewer != 0");
+	//cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
+	//PrintDebugLog((char*)(to_string(cameraMode)).c_str());
+	//Vehicle.Update();
+	//Vanel.Process(vehicle.speed, vehicle.rpm, vehicle.fuelLevel, vehicle.kilometrage, vehicle.currentGear);
+
+	A_Signals();
+
+	if (DisplayPanel){
+		if (cameraMode != 0){
+			Panel.SetVisiblity(true);
+			//PrintDebugLog("Process() -  Panel.SetVisiblity(true)");
+		}
+		else{
+			Panel.SetVisiblity(false);
+			//PrintDebugLog("Process() -  Panel.SetVisiblity(false)");
+		}
+	}
+
+	if (!(Panel.PanelKey)){
+		Panel.Reset();
+		PrintDebugLog("Process() -  Panel.Reset()");
+	}
+
+	if (!(Vehicle.m_offset)){
+		Vehicle.Reset();
+		PrintDebugLog("Process() -  Vehicle.Reset()");
+	}
+	PrintDebugLog("Process() executed");
 }
 
 DllClass::DllClass()
@@ -763,6 +961,7 @@ void OnTimer(HWND hwnd,   UINT msg, UINT idTimer, DWORD dwTime)
 
 	if (Viewer) {
 		PrintDebugLog("dllmain.cpp - Process()");
+		GetInput();
 		Process();
 	}
 }
