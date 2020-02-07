@@ -888,11 +888,6 @@ void Update()
 	cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
 	Vehicle.Update();
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
-
-	if (ML_OutView || ML_IntView){
-		A_Cam();
-		PrintDebugLog("dllmain.cpp - camera func");
-	}
 }
 
 void Process()
@@ -905,22 +900,20 @@ void Process()
 			PrintDebugLog("dllmain.cpp - custom res");
 		}
 	}
-	//PrintDebugLog("Process() -  Viewer != 0");
-	//cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
-	//PrintDebugLog((char*)(to_string(cameraMode)).c_str());
-	//Vehicle.Update();
-	//Vanel.Process(vehicle.speed, vehicle.rpm, vehicle.fuelLevel, vehicle.kilometrage, vehicle.currentGear);
+
+	if (ML_OutView || ML_IntView){
+		A_Cam();
+		PrintDebugLog("dllmain.cpp - camera func");
+	}
 
 	A_Signals();
 
 	if (DisplayPanel){
 		if (cameraMode != 0){
 			Panel.SetVisiblity(true);
-			//PrintDebugLog("Process() -  Panel.SetVisiblity(true)");
 		}
 		else{
 			Panel.SetVisiblity(false);
-			//PrintDebugLog("Process() -  Panel.SetVisiblity(false)");
 		}
 	}
 
