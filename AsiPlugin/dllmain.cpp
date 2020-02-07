@@ -304,7 +304,7 @@ public:
 		m_fuelLevel = *(float *)(m_offset + 20988);
 		m_damageLevel = *(float *)(m_task + 0x51F0);
 		m_kilometrage = ((int)(*(float *)(m_offset + 20980)));
-		m_currentGear = *(DWORD *)0x6F346C;
+		m_currentGear = *(DWORD *)(m_task + 20996);
 		m_lightsState = *(DWORD *)(m_offset + 20920);
 		m_handbrakeState = *(DWORD *)(m_task + 21004);
 		m_mass = *(float *)(m_Car_V + 0x2640);
@@ -569,10 +569,10 @@ public:
 
 		if (GearKeyAddress)
 		{			
-			if (*(DWORD *)0x6F346C <= 12){
+			if (c_currentgear <= 12){
 				b3d::SetCaseSwitch_s(GearKeyAddress, *(DWORD *)0x6F346C);
 			}
-			if (*(DWORD *)0x6F346C > 12){
+			if (c_currentgear > 12){
 				b3d::SetCaseSwitch_s(GearKeyAddress, 12);
 			}
 		}
