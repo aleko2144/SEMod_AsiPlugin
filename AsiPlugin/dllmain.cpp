@@ -311,12 +311,10 @@ public:
 class CBlockKey : public CBlock
 {
 public:
-	int *offset;
 	int childCount;
 	int caseState;
 	void Clear()
 	{
-		offset = 0;
 		childCount = 0;
 		caseState = 0;
 	}
