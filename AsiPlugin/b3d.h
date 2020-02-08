@@ -8,6 +8,7 @@ namespace b3d
 	int *SearchBlock(int *parent, char *name, char *a3);
 	void SetCaseSwitch_s(int *offset, int state);
 	int GetCaseSwitch(int *offset);
+	int GetChildCount(int *offset);
 }
 
 #endif
