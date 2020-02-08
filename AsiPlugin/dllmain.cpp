@@ -3,9 +3,9 @@
 #include <windows.h>
 #include <string>
 
-#include "b3d.h"
+//#include "b3d.h"
 #include "new_structures.h"
-#include "BlockSpace.h"
+//#include "BlockSpace.h"
 #include "GameApp.h"
 
 bool keyPressed = false;
@@ -103,6 +103,251 @@ void PrintWarnLog(const char *text)
 	}
 }
 
+//sub_4BC2C0 - дым?
+//sub_4BA470
+//sub_59EFF0((int)v6, TheGamePtr, a1, a2, 1048576000, (int)gMsmokeMaterials, 1)                                 <- статичный дым?
+//sub_59AD00((int)v7, TheGamePtr, (CVector *)a3, (CVector *)a4, gMsmokeMaterials, gMsmokeMaterialsCount, 1.5)   <- анимированный дым? (т.е. с переключением картинок)
+
+class CBlock
+{
+public:
+	int *offset;
+	void Clear()
+	{
+		offset = 0;
+	}
+	CBlock()
+	{
+		Clear();
+	}
+	int *FindGameObject(int *parent, const char *name)
+	{
+		typedef int*(*findObject)(int *a1, int *a2);
+		int *result = findObject(0x5EF260)(parent, (int*)name);
+		return result;
+	}
+	int *SearchBlock(int *parent, char *name, char *a3)
+	{
+		typedef int*(*SearchBlock)(int *a1, char *a2, char *a3);
+		int *result = SearchBlock(0x4E47F0)(parent, name, a3);
+		return result;
+	}
+};
+class CBlockSpace : public CBlock
+{
+public:
+	float *Matrix;
+	void Clear()
+	{
+		Matrix = 0;
+	}
+	CBlockSpace()
+	{
+		Clear();
+	}
+	void Move(Vector3D pos, int type)
+	{
+		Matrix = (float *)(offset + 16);
+
+		if (type == 0)
+		{
+			Matrix[9] += pos.x;
+			Matrix[10] += pos.y;
+			Matrix[11] += pos.z;
+		}
+		else if (type == 1)
+		{
+			Matrix[9] = pos.x;
+			Matrix[10] = pos.y;
+			Matrix[11] = pos.z;
+		}
+	}
+	Vector3D GetPosition()
+	{
+		Matrix = (float *)(offset + 16);
+		Vector3D pos;
+		pos.x = Matrix[9];
+		pos.y = Matrix[10];
+		pos.z = Matrix[11];
+
+		return pos;
+	}
+	Vector3D GetAngles()
+	{
+		Matrix = (float *)(offset + 16);
+
+		double PI = 3.14159265358979;
+
+		Vector3D rot;
+
+		float m11 = Matrix[0];
+		float m12 = Matrix[1];
+		float m13 = Matrix[2];
+
+		float m21 = Matrix[3];
+		float m22 = Matrix[4];
+		float m23 = Matrix[5];
+
+		float m31 = Matrix[6];
+		float m32 = Matrix[7];
+		float m33 = Matrix[8];
+
+		float x_d;
+		float y_d;
+		float z_d;
+
+		double cy = sqrt(m33*m33 + m31*m31);
+
+		if (cy > 16*FLT_EPSILON)
+		{
+			z_d = (float) atan2(m12, m22);
+			x_d = (float) atan2(- m32, (float) cy);
+			y_d = (float) atan2(m31, m33);
+		}
+		else
+		{
+			z_d = (float) atan2(- m21, m11);
+			x_d = (float) atan2(- m32, (float) cy);
+			y_d = 0;
+		}
+
+		rot.x = ((x_d * 180) / PI);
+		rot.y = ((y_d * 180) / PI);
+		rot.z = ((z_d * 180) / PI);
+	
+		return rot;
+	}
+	float *GetMatrix()
+	{
+		Matrix = (float *)(offset + 16);
+		return Matrix;
+	}
+	void Rotate(Vector3D rot, int type)
+	{
+		Matrix = (float *)(offset + 16);
+
+		double PI = 3.14159265358979;
+
+		float m11 = Matrix[0];
+		float m12 = Matrix[1];
+		float m13 = Matrix[2];
+
+		float m21 = Matrix[3];
+		float m22 = Matrix[4];
+		float m23 = Matrix[5];
+
+		float m31 = Matrix[6];
+		float m32 = Matrix[7];
+		float m33 = Matrix[8];
+
+		float x_d;
+		float y_d;
+		float z_d;
+
+		double cy = sqrt(m33*m33 + m31*m31);
+
+		if (cy > 16*FLT_EPSILON)
+		{
+			z_d = (float) atan2(m12, m22);
+			x_d = (float) atan2(- m32, (float) cy);
+			y_d = (float) atan2(m31, m33);
+		}
+		else
+		{
+			z_d = (float) atan2(- m21, m11);
+			x_d = (float) atan2(- m32, (float) cy);
+			y_d = 0;
+		}
+
+		float x1 = ((x_d * 180) / PI);
+		float y1 = ((y_d * 180) / PI);
+		float z1 = ((z_d * 180) / PI);
+
+		float x = 0;
+		float y = 0;
+		float z = 0;
+
+		y = -rot.y;
+		x = -rot.x;
+		z = -rot.z;
+
+		if (type == 1)
+		{
+			y -= y1;
+			x -= x1;
+			z -= z1;
+		}
+
+		float cos_y = cos((y * PI / 180));
+		float sin_y = sin((y * PI / 180));
+		float cos_z = cos((z * PI / 180));
+		float sin_z = sin((z * PI / 180));
+		float cos_x = cos((x * PI / 180));
+		float sin_x = sin((x * PI / 180));
+
+		float X0 = cos_y * cos_z;
+		float Y0 = sin_y * sin_x - cos_y * sin_z * cos_x;
+		float Z0 = cos_y * sin_z * sin_x + sin_y * cos_x;
+		float X1 = sin_z;
+		float Y1 = cos_z * cos_x;
+		float Z1 = -cos_z * sin_x;
+		float X2 = -sin_y * cos_z;
+		float Y2 = sin_y * sin_z * cos_x + cos_y * sin_x;
+		float Z2 = -sin_y * sin_z * sin_x + cos_y * cos_x;
+
+		Matrix[0] = X0;
+		Matrix[1] = Y0;
+		Matrix[2] = Z0;
+
+		Matrix[3] = X1;
+		Matrix[4] = Y1;
+		Matrix[5] = Z1;
+
+		Matrix[6] = X2;
+		Matrix[7] = Y2;
+		Matrix[8] = Z2;
+	}
+};
+class CBlockKey : public CBlock
+{
+public:
+	int *offset;
+	int childCount;
+	int caseState;
+	void Clear()
+	{
+		offset = 0;
+		childCount = 0;
+		caseState = 0;
+	}
+	CBlockKey()
+	{
+		Clear();
+	}
+	void SetCaseSwitch(int state)
+	{
+		typedef int(*SetCaseSwitch)(int *offset, int state);
+		int ret = SetCaseSwitch(0x4E48AC)(offset, state);
+	}
+	int GetChildCount()
+	{
+		if (offset){
+			return *(int*)((int)offset + 52);
+		}
+	}
+	void SetCaseSwitch_s(int state){
+		if (offset && state < GetChildCount()){
+			SetCaseSwitch(state);
+		}
+	}
+	int GetCaseSwitch()
+	{
+		if (offset){
+			return *(int*)((int)offset + 56);
+		}
+	}
+};
+
 class CVehicle
 {
 public:
@@ -122,14 +367,14 @@ public:
 	int m_lightsState;
 	int m_handbrakeState;
 	///салоны///
-	int *m_AKBSpaceI;
-	int *m_ECOSpaceI;
-	int *m_OilSpaceI;
-	int *m_FuelSpaceI;
-	int *m_CEKeyI;
-	int *m_LightsKeyI;
-	int *m_ParkKeyI;
-	int *m_PriborKeyI;
+	CBlockSpace m_AKBSpaceI;
+	CBlockSpace m_ECOSpaceI;
+	CBlockSpace m_OilSpaceI;
+	CBlockSpace m_FuelSpaceI;
+	CBlockKey m_CEKeyI;
+	CBlockKey m_LightsKeyI;
+	CBlockKey m_ParkKeyI;
+	CBlockKey m_PriborKeyI;
 	float m_AnmInt_FuelCoeff;
 	float m_AnmInt_EcoCoeff;
 	float m_AnmInt_EcoMaxDeg;
@@ -138,12 +383,12 @@ public:
 	///-----///
 	float m_mass;
 	float m_massMax;
-	int *m_CargoKey;
+	CBlockKey m_CargoKey;
 	///////////
-	int *m_TurnSignalRAddress;
-	int *m_TurnSignalLAddress;
-	int *m_TurnSignalR_IAddress;
-	int *m_TurnSignalL_IAddress;
+	CBlockKey m_TurnSignalRAddress;
+	CBlockKey m_TurnSignalLAddress;
+	CBlockKey m_TurnSignalR_IAddress;
+	CBlockKey m_TurnSignalL_IAddress;
 	////////////////////////////
 	int *m_processVehicle;
 	float *m_matrix[8];
@@ -151,49 +396,6 @@ public:
 	float *m_movingVelocity[2];
 	float *m_rotationVelocity[2];
 
-	CVehicle()
-	{
-		m_offset = 0;
-		m_task = 0;
-		m_Car_V = 0;
-		m_car_prefix = "";
-		m_cab_prefix = "";
-		m_speed_ms = 0;
-		m_speed = 0;
-		m_rpm = 0;
-		m_fuelLevel = 0;
-		m_damageLevel = 0;
-		m_kilometrage = 0;
-		m_currentGear = 0;
-		m_vehicleID = 0;
-		m_lightsState = 0;
-		m_handbrakeState = 0;
-		/////
-		m_AKBSpaceI = 0;
-		m_ECOSpaceI = 0;
-		m_OilSpaceI = 0;
-		m_FuelSpaceI = 0;
-		m_CEKeyI = 0;
-		m_LightsKeyI = 0;
-		m_ParkKeyI = 0;
-		m_PriborKeyI = 0;
-		m_AnmInt_FuelCoeff = 0;
-		m_AnmInt_EcoCoeff = 0;
-		m_AnmInt_EcoMaxDeg = 0;
-		m_AnmInt_AKBCoeff = 0;
-		m_AnmInt_AKBMaxDeg = 0;
-		/////
-		m_mass = 0;
-		m_massMax = 0;
-		m_CargoKey = 0;
-		/////////////
-		m_TurnSignalRAddress = 0;
-		m_TurnSignalLAddress = 0;
-		m_TurnSignalR_IAddress = 0;
-		m_TurnSignalL_IAddress = 0;
-		////////////////////////////
-		m_processVehicle = 0;
-	}
 	void Clear()
 	{
 		m_offset = 0;
@@ -212,14 +414,6 @@ public:
 		m_lightsState = 0;
 		m_handbrakeState = 0;
 		/////
-		m_AKBSpaceI = 0;
-		m_ECOSpaceI = 0;
-		m_OilSpaceI = 0;
-		m_FuelSpaceI = 0;
-		m_CEKeyI = 0;
-		m_LightsKeyI = 0;
-		m_ParkKeyI = 0;
-		m_PriborKeyI = 0;
 		m_AnmInt_FuelCoeff = 0;
 		m_AnmInt_EcoCoeff = 0;
 		m_AnmInt_EcoMaxDeg = 0;
@@ -228,14 +422,12 @@ public:
 		/////
 		m_mass = 0;
 		m_massMax = 0;
-		m_CargoKey = 0;
-		////////
-		m_TurnSignalRAddress = 0;
-		m_TurnSignalLAddress = 0;
-		m_TurnSignalR_IAddress = 0;
-		m_TurnSignalL_IAddress = 0;
 		////////////////////////////
 		m_processVehicle = 0;
+	}
+	CVehicle()
+	{
+		Clear();
 	}
 	void Reset()
 	{
@@ -255,14 +447,14 @@ public:
 		m_lightsState = 0;
 		m_handbrakeState = 0;
 		/////
-		m_AKBSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "AKBSpace").c_str());
-		m_ECOSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "EcoSpace").c_str());
-		m_OilSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "OilSpace").c_str());
-		m_FuelSpaceI = b3d::FindGameObject(0, (m_cab_prefix + "FuelSpace").c_str());
-		m_CEKeyI = b3d::FindGameObject(0, (m_cab_prefix + "CEKey").c_str());
-		m_LightsKeyI = b3d::FindGameObject(0, (m_cab_prefix + "LightsKey").c_str());
-		m_ParkKeyI = b3d::FindGameObject(0, (m_cab_prefix + "ParkKey").c_str());
-		m_PriborKeyI = b3d::FindGameObject(0, (m_cab_prefix + "PriborKey").c_str());
+		m_AKBSpaceI.offset = m_AKBSpaceI.FindGameObject(0, (m_cab_prefix + "AKBSpace").c_str());
+		m_ECOSpaceI.offset = m_ECOSpaceI.FindGameObject(0, (m_cab_prefix + "EcoSpace").c_str());
+		m_OilSpaceI.offset = m_OilSpaceI.FindGameObject(0, (m_cab_prefix + "OilSpace").c_str());
+		m_FuelSpaceI.offset = m_FuelSpaceI.FindGameObject(0, (m_cab_prefix + "FuelSpace").c_str());
+		m_CEKeyI.offset = m_CEKeyI.FindGameObject(0, (m_cab_prefix + "CEKey").c_str());
+		m_LightsKeyI.offset = m_LightsKeyI.FindGameObject(0, (m_cab_prefix + "LightsKey").c_str());
+		m_ParkKeyI.offset = m_ParkKeyI.FindGameObject(0, (m_cab_prefix + "ParkKey").c_str());
+		m_PriborKeyI.offset = m_PriborKeyI.FindGameObject(0, (m_cab_prefix + "PriborKey").c_str());
 		m_AnmInt_FuelCoeff = GetPrivateProfileFloat(m_cab_prefix, "FuelCoeff", "0", ".\\SEMod.ini");
 		m_AnmInt_EcoCoeff = GetPrivateProfileFloat(m_cab_prefix, "EcoCoeff", "0", ".\\SEMod.ini");
 		m_AnmInt_EcoMaxDeg = GetPrivateProfileFloat(m_cab_prefix, "EcoMaxDeg", "0", ".\\SEMod.ini");
@@ -271,52 +463,52 @@ public:
 		/////
 		m_mass = 0;
 		m_massMax = GetPrivateProfileIntA("CARGO", (m_car_prefix + "Mass").c_str(), 0, ".\\SEMod.ini");
-		m_CargoKey = b3d::FindGameObject(0, (m_car_prefix + "CargoKey").c_str());
+		m_CargoKey.offset = m_CargoKey.FindGameObject(0, (m_car_prefix + "CargoKey").c_str());
 		/////
-		m_TurnSignalRAddress = b3d::FindGameObject(0, (m_car_prefix + "TurnSignalR").c_str());
-		m_TurnSignalLAddress = b3d::FindGameObject(0, (m_car_prefix + "TurnSignalL").c_str());
-		m_TurnSignalR_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalR_I").c_str());
-		m_TurnSignalL_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalL_I").c_str());
+		m_TurnSignalRAddress.offset = m_TurnSignalRAddress.FindGameObject(0, (m_car_prefix + "TurnSignalR").c_str());
+		m_TurnSignalLAddress.offset = m_TurnSignalLAddress.FindGameObject(0, (m_car_prefix + "TurnSignalL").c_str());
+		m_TurnSignalR_IAddress.offset = m_TurnSignalR_IAddress.FindGameObject(0, (m_cab_prefix + "TurnSignalR_I").c_str());
+		m_TurnSignalL_IAddress.offset = m_TurnSignalL_IAddress.FindGameObject(0, (m_cab_prefix + "TurnSignalL_I").c_str());
 		////////////////////////////
 		m_processVehicle = 0;
 
-		if (!m_AKBSpaceI){
+		if (!m_AKBSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
 		}
-		if (!m_ECOSpaceI){
+		if (!m_ECOSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "EcoSpace").c_str());
 		}
-		if (!m_OilSpaceI){
+		if (!m_OilSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "OilSpace").c_str());
 		}
-		if (!m_FuelSpaceI){
+		if (!m_FuelSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "FuelSpace").c_str());
 		}
-		if (!m_CEKeyI){
+		if (!m_CEKeyI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "CEKey").c_str());
 		}
-		if (!m_LightsKeyI){
+		if (!m_LightsKeyI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "LightsKey").c_str());
 		}
-		if (!m_ParkKeyI){
+		if (!m_ParkKeyI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "ParkKey").c_str());
 		}
-		if (!m_PriborKeyI){
+		if (!m_PriborKeyI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "PriborKey").c_str());
 		}
-		if (!m_CargoKey){
+		if (!m_CargoKey.offset){
 			PrintWarnLog((char*)("Not found " + m_car_prefix + "CargoKey").c_str());
 		}
-		if (!m_TurnSignalRAddress){
+		if (!m_TurnSignalRAddress.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalR").c_str());
 		}
-		if (!m_TurnSignalLAddress){
+		if (!m_TurnSignalLAddress.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalL").c_str());
 		}
-		if (!m_TurnSignalR_IAddress){
+		if (!m_TurnSignalR_IAddress.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalR_I").c_str());
 		}
-		if (!m_TurnSignalL_IAddress){
+		if (!m_TurnSignalL_IAddress.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "TurnSignalL_I").c_str());
 		}
 	}
@@ -364,32 +556,32 @@ public:
 			m_speed = m_speed_ms * 2.23694;
 		}
 
-		if (m_PriborKeyI)
+		if (m_PriborKeyI.offset)
 		{
 			if (!m_lightsState){
-				b3d::SetCaseSwitch_s(m_PriborKeyI, 0);
+				m_PriborKeyI.SetCaseSwitch_s(0);
 			}
 			else{
-				b3d::SetCaseSwitch_s(m_PriborKeyI, 1);
+				m_PriborKeyI.SetCaseSwitch_s(1);
 			}
 		}
 
-		if (m_LightsKeyI){
+		if (m_LightsKeyI.offset){
 			if (!m_lightsState){
-				b3d::SetCaseSwitch_s(m_LightsKeyI, 0);
+				m_LightsKeyI.SetCaseSwitch_s(0);
 			}
 			else
 			{
-				b3d::SetCaseSwitch_s(m_LightsKeyI, 1);
+				m_LightsKeyI.SetCaseSwitch_s(1);
 			}
 		}
 
-		if (m_ParkKeyI)
+		if (m_ParkKeyI.offset)
 		{
-			b3d::SetCaseSwitch_s(m_ParkKeyI, m_handbrakeState);
+			m_ParkKeyI.SetCaseSwitch_s(m_handbrakeState);
 		}
 
-		if (m_ECOSpaceI)
+		if (m_ECOSpaceI.offset)
 		{
 			float rpm_eco;
 			float rpm_eco_coeff = m_AnmInt_EcoCoeff;
@@ -410,10 +602,10 @@ public:
 			}
 
 			Vector3D eco = {0, rpm_eco, 0};
-			BlockSpace::Rotate(m_ECOSpaceI, eco, 0);
+			m_ECOSpaceI.Rotate(eco, 0);
 		}
 		
-		if (m_AKBSpaceI)
+		if (m_AKBSpaceI.offset)
 		{
 			float rpm_AKB;
 			float AKB_coeff = m_AnmInt_AKBCoeff;
@@ -434,10 +626,10 @@ public:
 			}
 
 			Vector3D AKB = {0, rpm_AKB, 0};
-			BlockSpace::Rotate(m_AKBSpaceI, AKB, 0);
+			m_AKBSpaceI.Rotate(AKB, 0);
 		}
 
-		if (m_FuelSpaceI)
+		if (m_FuelSpaceI.offset)
 		{
 			float _fuel;
 			float fuel_coeff = m_AnmInt_FuelCoeff;
@@ -452,28 +644,28 @@ public:
 			}
 
 			Vector3D Fuel = {0, _fuel, 0};
-			BlockSpace::Rotate(m_FuelSpaceI, Fuel, 0);
+			m_FuelSpaceI.Rotate(Fuel, 0);
 		}
 
-		if (m_CEKeyI){
+		if (m_CEKeyI.offset){
 			if (m_damageLevel){
-				b3d::SetCaseSwitch_s(m_CEKeyI, 1);
+				m_CEKeyI.SetCaseSwitch_s(1);
 			}
 			else
 			{
-				b3d::SetCaseSwitch_s(m_CEKeyI, 0);
+				m_CEKeyI.SetCaseSwitch_s(0);
 			}
 		}
 
-		if (m_CargoKey && m_massMax)
+		if (m_CargoKey.offset && m_massMax)
 		{
 			if (m_massMax < m_mass)
 			{
-				b3d::SetCaseSwitch_s(m_CargoKey, 1);
+				m_CargoKey.SetCaseSwitch_s(1);
 			}
 			else
 			{
-				b3d::SetCaseSwitch_s(m_CargoKey, 0);
+				m_CargoKey.SetCaseSwitch_s(0);
 			}
 		}
 	}
@@ -481,89 +673,57 @@ public:
 class CPanel
 {
 public:
-	int *PanelKey;      //переключатель отображения панели
-	int *PanelSpace;    //локатор панели
+	CBlockKey PanelKey;      //переключатель отображения панели
+	CBlockSpace PanelSpace;    //локатор панели
 
-	int *GearKeyAddress; //текущая передача
-	int *AvtoKeyAddress; //АКПП/МКПП
-	int *FuelLampKeyAddress; //датчик низкого уровня топлива
-	int *KMeter0KeyAddress;  //одометр[0]
-	int *KMeter1KeyAddress;  //одометр[1]
-	int *KMeter2KeyAddress;  //одометр[2]
-	int *KMeter3KeyAddress;  //одометр[3]
-	int *KMeter4KeyAddress;  //одометр[4]
+	CBlockKey GearKey; //текущая передача
+	CBlockKey AvtoKey; //АКПП/МКПП
+	CBlockKey FuelLampKey; //датчик низкого уровня топлива
+	CBlockKey KMeter0Key;  //одометр[0]
+	CBlockKey KMeter1Key;  //одометр[1]
+	CBlockKey KMeter2Key;  //одометр[2]
+	CBlockKey KMeter3Key;  //одометр[3]
+	CBlockKey KMeter4Key;  //одометр[4]
 
-	int *TachoSpaceAddress;  //локатор стрелки тахометра
-	int *SpeedSpaceAddress;  //локатор стрелки спидометра
-	int *FuelArrowSpaceAddress; //локатор стрелки уровня топлива
+	CBlockSpace TachoSpace;  //локатор стрелки тахометра
+	CBlockSpace SpeedSpace;  //локатор стрелки спидометра
+	CBlockSpace FuelArrowSpace; //локатор стрелки уровня топлива
 
-	int *ParkKeyAddress; //локатор лампы стояночного тормоза
-	int *TrailerKeyAddress; //локатор лампы полуприцепа (похоже, что в версиях после 4.0, поддержка TrailerKey отсутствует)
+	CBlockKey ParkKey; //локатор лампы стояночного тормоза
+	CBlockKey TrailerKey; //локатор лампы полуприцепа (похоже, что в версиях после 4.0, поддержка TrailerKey отсутствует)
 
 	float SpeedCoeff; //= макс. угол поворота стрелки / макс. значение шкалы
 	float TachoCoeff;
 	float FuelCoeff;
-	CPanel()
-	{
-		PanelKey = 0;
-		PanelSpace = 0;
-		GearKeyAddress = 0;
-		AvtoKeyAddress = 0;
-		FuelLampKeyAddress = 0;
-		KMeter0KeyAddress = 0;
-		KMeter1KeyAddress = 0;
-		KMeter2KeyAddress = 0;
-		KMeter3KeyAddress = 0;
-		KMeter4KeyAddress = 0;
-		TachoSpaceAddress = 0;
-		SpeedSpaceAddress = 0;
-		FuelArrowSpaceAddress = 0;
-		ParkKeyAddress = 0;
-		TrailerKeyAddress = 0;
-		SpeedCoeff = 0;
-		TachoCoeff = 0;
-		FuelCoeff = 0;
-		PrintDebugLog("CPanel.CPanel()");
-	}
 	void Clear()
 	{
-		PanelKey = 0;
-		PanelSpace = 0;
-		GearKeyAddress = 0;
-		AvtoKeyAddress = 0;
-		FuelLampKeyAddress = 0;
-		KMeter0KeyAddress = 0;
-		KMeter1KeyAddress = 0;
-		KMeter2KeyAddress = 0;
-		KMeter3KeyAddress = 0;
-		KMeter4KeyAddress = 0;
-		TachoSpaceAddress = 0;
-		SpeedSpaceAddress = 0;
-		FuelArrowSpaceAddress = 0;
-		ParkKeyAddress = 0;
-		TrailerKeyAddress = 0;
 		SpeedCoeff = 0;
 		TachoCoeff = 0;
 		FuelCoeff = 0;
 		PrintDebugLog("CPanel.Clear()");
 	}
+	CPanel()
+	{
+		Clear();
+		PrintDebugLog("CPanel.CPanel()");
+	}
 	void Reset()
 	{
-		PanelKey = b3d::FindGameObject(0, "PanelKey");
-		PanelSpace = b3d::FindGameObject(0, "PanelSpace");
-		GearKeyAddress = b3d::FindGameObject(0, "GearKey");
-		AvtoKeyAddress = b3d::FindGameObject(0, "AvtoKey");
-		FuelLampKeyAddress = b3d::FindGameObject(0, "FuelLampKey");
-		KMeter0KeyAddress = b3d::FindGameObject(0, "KMeter0Key");
-		KMeter1KeyAddress = b3d::FindGameObject(0, "KMeter1Key");
-		KMeter2KeyAddress = b3d::FindGameObject(0, "KMeter2Key");
-		KMeter3KeyAddress = b3d::FindGameObject(0, "KMeter3Key");
-		KMeter4KeyAddress = b3d::FindGameObject(0, "KMeter4Key");
-		ParkKeyAddress = b3d::FindGameObject(0, "ParkKey");
-		TrailerKeyAddress = b3d::FindGameObject(0, "TrailerKey");
-		TachoSpaceAddress = b3d::FindGameObject(0, "TachoSpace");
-		SpeedSpaceAddress = b3d::FindGameObject(0, "SpeedSpace");
-		FuelArrowSpaceAddress = b3d::FindGameObject(0, "FuelArrowSpace");
+		PanelKey.offset = PanelKey.FindGameObject(0, "PanelKey");
+		PanelSpace.offset = PanelSpace.FindGameObject(0, "PanelSpace");
+		GearKey.offset = GearKey.FindGameObject(0, "GearKey");
+		AvtoKey.offset = AvtoKey.FindGameObject(0, "AvtoKey");
+		FuelLampKey.offset = FuelLampKey.FindGameObject(0, "FuelLampKey");
+		KMeter0Key.offset = KMeter0Key.FindGameObject(0, "KMeter0Key");
+		KMeter1Key.offset = KMeter1Key.FindGameObject(0, "KMeter1Key");
+		KMeter2Key.offset = KMeter2Key.FindGameObject(0, "KMeter2Key");
+		KMeter3Key.offset = KMeter3Key.FindGameObject(0, "KMeter3Key");
+		KMeter4Key.offset = KMeter4Key.FindGameObject(0, "KMeter4Key");
+		ParkKey.offset = ParkKey.FindGameObject(0, "ParkKey");
+		TrailerKey.offset = TrailerKey.FindGameObject(0, "TrailerKey");
+		TachoSpace.offset = TachoSpace.FindGameObject(0, "TachoSpace");
+		SpeedSpace.offset = SpeedSpace.FindGameObject(0, "SpeedSpace");
+		FuelArrowSpace.offset = FuelArrowSpace.FindGameObject(0, "FuelArrowSpace");
 		PrintDebugLog("CPanel.Reset()");
 	}
 	void FixPosition() //if (UseCustomRes){
@@ -577,17 +737,17 @@ public:
 			panel_pos.z = -0.8;
 		}
 
-		if (BlockSpace::GetPosition(PanelSpace).z != panel_pos.z){
-			BlockSpace::Move(PanelSpace, panel_pos, 1);
+		if (PanelSpace.GetPosition().z != panel_pos.z){
+			PanelSpace.Move(panel_pos, 1);
 		}
 		PrintDebugLog("CPanel.FixPosition()");
 	}
 	void SetVisiblity(bool state){
 		if (state){
-			b3d::SetCaseSwitch_s(PanelKey, 1); 
+			PanelKey.SetCaseSwitch_s(1); 
 		}
 		else{
-			b3d::SetCaseSwitch_s(PanelKey, 0); 
+			PanelKey.SetCaseSwitch_s(0); 
 		}
 		//PrintDebugLog("CPanel.SetVisiblity()");
 	}
@@ -599,24 +759,24 @@ public:
 		int KMeter1Value = (c_kilometrage - 1000 * (KMeter2Value + 10 * (KMeter3Value + 10 * (c_kilometrage / 100000)))) / 100;
 		int KMeter0Value = (c_kilometrage - 100 * (KMeter1Value + 10 * (KMeter2Value + 10 * (KMeter3Value + 10 * (c_kilometrage / 100000))))) / 10;
 
-		b3d::SetCaseSwitch_s(KMeter0KeyAddress, KMeter0Value);
-		b3d::SetCaseSwitch_s(KMeter1KeyAddress, KMeter1Value);
-		b3d::SetCaseSwitch_s(KMeter2KeyAddress, KMeter2Value);
-		b3d::SetCaseSwitch_s(KMeter3KeyAddress, KMeter3Value);
-		b3d::SetCaseSwitch_s(KMeter4KeyAddress, KMeter4Value);
+		KMeter0Key.SetCaseSwitch_s(KMeter0Value);
+		KMeter1Key.SetCaseSwitch_s(KMeter1Value);
+		KMeter2Key.SetCaseSwitch_s(KMeter2Value);
+		KMeter3Key.SetCaseSwitch_s(KMeter3Value);
+		KMeter4Key.SetCaseSwitch_s(KMeter4Value);
 
 		if (c_fuelLevel < 0.20){
-			b3d::SetCaseSwitch_s(FuelLampKeyAddress, 1);
+			FuelLampKey.SetCaseSwitch_s(1);
 		}
 		else{
-			b3d::SetCaseSwitch_s(FuelLampKeyAddress, 0);
+			FuelLampKey.SetCaseSwitch_s(0);
 		}
 		
-		b3d::SetCaseSwitch_s(GearKeyAddress, c_currentgear);
-		b3d::SetCaseSwitch_s(ParkKeyAddress, c_handbrakeState);
-		b3d::SetCaseSwitch_s(AvtoKeyAddress, *(int *)0x6F3470);
+		GearKey.SetCaseSwitch_s(c_currentgear);
+		ParkKey.SetCaseSwitch_s(c_handbrakeState);
+		AvtoKey.SetCaseSwitch_s(*(int *)0x6F3470);
 
-		if (SpeedSpaceAddress){
+		if (SpeedSpace.offset){
 			float speed;
 
 			if (c_speed <= 120){
@@ -627,10 +787,10 @@ public:
 			}
 
 			Vector3D speed_v = {0, speed, 0};
-			BlockSpace::Rotate(SpeedSpaceAddress, speed_v, 0);
+			SpeedSpace.Rotate(speed_v, 0);
 		}
 
-		if (TachoSpaceAddress){
+		if (TachoSpace.offset){
 			float tacho = 0;
 
 			if (c_rpm <= 25.0){
@@ -641,13 +801,13 @@ public:
 			}
 
 			Vector3D tacho_v = {0, tacho, 0};
-			BlockSpace::Rotate(TachoSpaceAddress, tacho_v, 0);
+			TachoSpace.Rotate(tacho_v, 0);
 		}
 
-		if (FuelArrowSpaceAddress){
+		if (FuelArrowSpace.offset){
 			float fuelArrow = (c_fuelLevel * FuelCoeff);
 			Vector3D fuel_v = {0, fuelArrow, 0};
-			BlockSpace::Rotate(FuelArrowSpaceAddress, fuel_v, 0);
+			FuelArrowSpace.Rotate(fuel_v, 0);
 		}
 		PrintDebugLog("CPanel.Process()");
 	}
@@ -828,21 +988,21 @@ void A_Signals()
 	{
 		if ((GetTickCount() - TS_TickCountStart) % 1000 < 300)
 		{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 1);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 1);
+		Vehicle.m_TurnSignalRAddress.SetCaseSwitch_s(1);
+		Vehicle.m_TurnSignalR_IAddress.SetCaseSwitch_s(1);
 		TSR_lighting = true;
 		}
 		else
 		{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 0);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 0);
+		Vehicle.m_TurnSignalRAddress.SetCaseSwitch_s(0);
+		Vehicle.m_TurnSignalR_IAddress.SetCaseSwitch_s(0);
 		TSR_lighting = false;
 		}
 	}
 	else
 	{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalRAddress, 0);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalR_IAddress, 0);
+		Vehicle.m_TurnSignalRAddress.SetCaseSwitch_s(0);
+		Vehicle.m_TurnSignalR_IAddress.SetCaseSwitch_s(0);
 		TSR_lighting = false;
 
 	}
@@ -851,21 +1011,21 @@ void A_Signals()
 	{
 		if ((GetTickCount() - TS_TickCountStart) % 1000 < 300)
 		{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 1);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 1);
+		Vehicle.m_TurnSignalLAddress.SetCaseSwitch_s(1);
+		Vehicle.m_TurnSignalL_IAddress.SetCaseSwitch_s(1);
 		TSL_lighting = true;
 		}
 		else
 		{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 0);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 0);
+		Vehicle.m_TurnSignalLAddress.SetCaseSwitch_s(0);
+		Vehicle.m_TurnSignalL_IAddress.SetCaseSwitch_s(0);
 		TSL_lighting = false;
 		}
 	}
 	else
 	{
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalLAddress, 0);
-		b3d::SetCaseSwitch_s(Vehicle.m_TurnSignalL_IAddress, 0);
+		Vehicle.m_TurnSignalLAddress.SetCaseSwitch_s(0);
+		Vehicle.m_TurnSignalL_IAddress.SetCaseSwitch_s(0);
 		TSL_lighting = false;
 	}
 
@@ -979,7 +1139,7 @@ void Process()
 	}
 
 	if (GetAsyncKeyState(0x49) & 0x8000){ //I
-		GameApp::DisplayScreenMessage((char *) (to_string( b3d::GetChildCount(Panel.GearKeyAddress))).c_str());
+		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetChildCount() )).c_str());
 		//GameApp::DisplayScreenMessage("не та клавиша");
 	}
 	
@@ -1010,20 +1170,10 @@ void Process()
 
 		GameApp::DisplayScreenMessage((char *) (to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x38) ) + "\n" + to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x34) )).c_str());*/
 
-		GameApp::DisplayScreenMessage((char *) (to_string( b3d::GetCaseSwitch(Panel.GearKeyAddress))).c_str());
+		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetCaseSwitch() )).c_str());
 
 		//GameApp::DisplayScreenMessage((char*)(to_string( *(Panel.GearKeyAddress) )).c_str());
 		//Vehicle.m_position[2] += 1;
-	}
-
-	if (!(Panel.PanelKey)){
-		Panel.Reset();
-		PrintDebugLog("Process() -  Panel.Reset()");
-	}
-
-	if (!(Vehicle.m_offset)){
-		Vehicle.Reset();
-		PrintDebugLog("Process() -  Vehicle.Reset()");
 	}
 	PrintDebugLog("Process() executed");
 }
