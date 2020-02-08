@@ -20,8 +20,15 @@ namespace b3d
 		return result;
 	}
 	
-	void SetCaseSwitch_s(int *offset, int state){
+	int GetChildCount(int *offset)
+	{
 		if (offset){
+			return *(int*)((int)offset + 52);
+		}
+	}
+
+	void SetCaseSwitch_s(int *offset, int state){
+		if (offset && state < GetChildCount(offset)){
 			SetCaseSwitch(offset, state);
 		}
 	}
@@ -30,13 +37,6 @@ namespace b3d
 	{
 		if (offset){
 			return *(int*)((int)offset + 56);
-		}
-	}
-
-	int GetChildCount(int *offset)
-	{
-		if (offset){
-			return *(int*)((int)offset + 52);
 		}
 	}
 }
