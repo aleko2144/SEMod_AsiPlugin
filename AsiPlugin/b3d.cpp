@@ -28,10 +28,15 @@ namespace b3d
 
 	int GetCaseSwitch(int *offset)
 	{
-		int current_switch = 0;
 		if (offset){
-			current_switch = (int)(offset + 56);
+			return *(int*)((int)offset + 56);
 		}
-		return current_switch;
+	}
+
+	int GetChildCount(int *offset)
+	{
+		if (offset){
+			return *(int*)((int)offset + 52);
+		}
 	}
 }
