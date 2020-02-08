@@ -38,6 +38,11 @@ float zoom = 0.5;
 int TS_TickCountStart = 0;
 bool is_indicators_flashed;
 
+////////////////////////////
+int ind_onSound;
+int ind_offSound;
+int ind_relaySound;
+
 using namespace std;
 
 bool ReadBooleanFromIni(string selection, string varname, string default_val, string filename){
@@ -88,6 +93,11 @@ void PrintWarnLog(const char *text)
 	}
 }
 
+//sub_4BC2C0 - дым?
+//sub_4BA470
+//sub_59EFF0((int)v6, TheGamePtr, a1, a2, 1048576000, (int)gMsmokeMaterials, 1)                                 <- статичный дым?
+//sub_59AD00((int)v7, TheGamePtr, (CVector *)a3, (CVector *)a4, gMsmokeMaterials, gMsmokeMaterialsCount, 1.5)   <- анимированный дым? (т.е. с переключением картинок)
+
 class CVehicle
 {
 public:
@@ -129,6 +139,12 @@ public:
 	int *m_TurnSignalLAddress;
 	int *m_TurnSignalR_IAddress;
 	int *m_TurnSignalL_IAddress;
+	////////////////////////////
+	int *m_processVehicle;
+	float *m_matrix[8];
+	float *m_position[2]; // [0] - x; [1] - y; [2] - z
+	float *m_movingVelocity[2];
+	float *m_rotationVelocity[2];
 
 	CVehicle()
 	{
@@ -170,6 +186,8 @@ public:
 		m_TurnSignalLAddress = 0;
 		m_TurnSignalR_IAddress = 0;
 		m_TurnSignalL_IAddress = 0;
+		////////////////////////////
+		m_processVehicle = 0;
 	}
 	void Clear()
 	{
@@ -211,6 +229,8 @@ public:
 		m_TurnSignalLAddress = 0;
 		m_TurnSignalR_IAddress = 0;
 		m_TurnSignalL_IAddress = 0;
+		////////////////////////////
+		m_processVehicle = 0;
 	}
 	void Reset()
 	{
@@ -252,6 +272,8 @@ public:
 		m_TurnSignalLAddress = b3d::FindGameObject(0, (m_car_prefix + "TurnSignalL").c_str());
 		m_TurnSignalR_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalR_I").c_str());
 		m_TurnSignalL_IAddress = b3d::FindGameObject(0, (m_cab_prefix + "TurnSignalL_I").c_str());
+		////////////////////////////
+		m_processVehicle = 0;
 
 		if (!m_AKBSpaceI){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
@@ -305,6 +327,30 @@ public:
 		m_lightsState = *(DWORD *)(m_offset + 20920);
 		m_handbrakeState = *(DWORD *)(m_task + 21004);
 		m_mass = *(float *)(m_Car_V + 0x2640);
+
+		m_processVehicle = (int *)(m_offset + 0x10 + 0x100 + 0x74);
+
+		m_matrix[0] = (float *)(m_Car_V + 16);
+		m_matrix[1] = (float *)(m_Car_V + 20);
+		m_matrix[2] = (float *)(m_Car_V + 24);
+		m_matrix[3] = (float *)(m_Car_V + 28);
+		m_matrix[4] = (float *)(m_Car_V + 32);
+		m_matrix[5] = (float *)(m_Car_V + 36);
+		m_matrix[6] = (float *)(m_Car_V + 40);
+		m_matrix[7] = (float *)(m_Car_V + 44);
+		m_matrix[8] = (float *)(m_Car_V + 48);
+
+		m_position[0] = (float *)(m_Car_V + 52);
+		m_position[1] = (float *)(m_Car_V + 56);
+		m_position[2] = (float *)(m_Car_V + 60);
+
+		m_movingVelocity[0] = (float *)(m_Car_V + 64);
+		m_movingVelocity[1] = (float *)(m_Car_V + 68);
+		m_movingVelocity[2] = (float *)(m_Car_V + 72);
+
+		m_rotationVelocity[0] = (float *)(m_Car_V + 76);
+		m_rotationVelocity[1] = (float *)(m_Car_V + 80);
+		m_rotationVelocity[2] = (float *)(m_Car_V + 84);
 
 		if (use_kmph){
 			m_speed = m_speed_ms * 3.6;
@@ -646,10 +692,10 @@ void GetInput()
 			if (!TurnSignalLState) { 
 				TurnSignalRState = !TurnSignalRState;
 				if (TurnSignalRState == true){
-					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+					GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
 				}
 				else{
-					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+					GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
 				}
 				TS_TickCountStart = GetTickCount();
 			}
@@ -661,10 +707,10 @@ void GetInput()
 			if (!TurnSignalRState) { 
 				TurnSignalLState = !TurnSignalLState; 
 				if (TurnSignalLState == true){
-					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_onSound"), 1.0, 1.0);
+					GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
 				}
 				else{
-					GameApp::PlaySound_(GameApp::SearchResourceSND("ind_offSound"), 1.0, 1.0);
+					GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
 				}
 				TS_TickCountStart = GetTickCount();
 			}
@@ -835,7 +881,7 @@ void A_Signals()
 		if (!is_indicators_flashed) 
 		{
 			is_indicators_flashed = true;
-			GameApp::PlaySound_(GameApp::SearchResourceSND("ind_relaySound"), 1.0, 1.0);
+			GameApp::PlaySound_(ind_relaySound, 1.0, 1.0);
 		}
 	}
 	else {
@@ -869,6 +915,10 @@ void PrepareValues(){
 	Panel.Reset();
 	Vehicle.Reset();
 
+	ind_onSound = GameApp::SearchResourceSND("ind_onSound");
+	ind_relaySound = GameApp::SearchResourceSND("ind_relaySound");
+	ind_offSound = GameApp::SearchResourceSND("ind_offSound");
+
 	if (Viewer)
 	{
 		AreValuesSet = true;
@@ -878,6 +928,10 @@ void PrepareValues(){
 void ResetValues(){
 	Vehicle.Clear();
 	Panel.Clear();
+
+	ind_onSound = 0;
+	ind_relaySound = 0;
+	ind_offSound = 0;
 
 	IsGUIFixed = false;
 	AreValuesSet = false;
@@ -915,6 +969,18 @@ void Process()
 		else{
 			Panel.SetVisiblity(false);
 		}
+	}
+
+	if (GetAsyncKeyState(0x49) & 0x8000){ //I
+		//*(int*)Vehicle.m_processVehicle = 0;
+		//GameApp::DisplayScreenMessage((char*)(to_string(*(int*)Vehicle.m_processVehicle)).c_str());
+		GameApp::DisplayScreenMessage((char *) (to_string(*(float*)Vehicle.m_position[0]) + " " + to_string(*(float*)Vehicle.m_position[1]) + " " + to_string(*(float*)Vehicle.m_position[2])).c_str());
+	}
+	
+	if (GetAsyncKeyState(0x4F) & 0x8000){ //K
+		//*(int*)Vehicle.m_processVehicle = 1;
+		//GameApp::DisplayScreenMessage((char*)(to_string(*(int*)Vehicle.m_processVehicle)).c_str());
+		Vehicle.m_position[2] += 10;
 	}
 
 	if (!(Panel.PanelKey)){
