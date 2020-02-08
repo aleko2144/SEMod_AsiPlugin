@@ -66,6 +66,16 @@ float GetPrivateProfileFloat(string selection, string varname, string default_va
 	to_return = atof(returnedString);
 	return to_return;
 }
+void PrintUserLog(const char *text)
+{
+	FILE *file = fopen("SEMod_output.log", "a");
+	if (file != NULL)
+	{
+		fputs(text, file);
+		fputs("\n", file);
+		fclose(file);
+	}
+}
 void PrintDebugLog(const char *text)
 {
 	if (WriteDebugLog)
@@ -92,11 +102,6 @@ void PrintWarnLog(const char *text)
 		}
 	}
 }
-
-//sub_4BC2C0 - дым?
-//sub_4BA470
-//sub_59EFF0((int)v6, TheGamePtr, a1, a2, 1048576000, (int)gMsmokeMaterials, 1)                                 <- статичный дым?
-//sub_59AD00((int)v7, TheGamePtr, (CVector *)a3, (CVector *)a4, gMsmokeMaterials, gMsmokeMaterialsCount, 1.5)   <- анимированный дым? (т.е. с переключением картинок)
 
 class CVehicle
 {
@@ -323,7 +328,7 @@ public:
 		m_fuelLevel = *(float *)(m_offset + 20988);
 		m_damageLevel = *(float *)(m_task + 0x51F0);
 		m_kilometrage = ((int)(*(float *)(m_offset + 20980)));
-		m_currentGear = *(DWORD *)(m_task + 20996);
+		m_currentGear = *(DWORD *)(m_task + 20980);
 		m_lightsState = *(DWORD *)(m_offset + 20920);
 		m_handbrakeState = *(DWORD *)(m_task + 21004);
 		m_mass = *(float *)(m_Car_V + 0x2640);
@@ -361,7 +366,7 @@ public:
 
 		if (m_PriborKeyI)
 		{
-			if (m_lightsState == 0){
+			if (!m_lightsState){
 				b3d::SetCaseSwitch_s(m_PriborKeyI, 0);
 			}
 			else{
@@ -370,7 +375,7 @@ public:
 		}
 
 		if (m_LightsKeyI){
-			if (m_lightsState == 0){
+			if (!m_lightsState){
 				b3d::SetCaseSwitch_s(m_LightsKeyI, 0);
 			}
 			else
@@ -451,7 +456,7 @@ public:
 		}
 
 		if (m_CEKeyI){
-			if (m_damageLevel != 0.0){
+			if (m_damageLevel){
 				b3d::SetCaseSwitch_s(m_CEKeyI, 1);
 			}
 			else
@@ -578,9 +583,6 @@ public:
 		PrintDebugLog("CPanel.FixPosition()");
 	}
 	void SetVisiblity(bool state){
-		if (!PanelKey) {
-			PrintWarnLog("Warning: CPanel.SetVisiblity() -> !PanelKey");
-		}
 		if (state){
 			b3d::SetCaseSwitch_s(PanelKey, 1); 
 		}
@@ -609,17 +611,8 @@ public:
 		else{
 			b3d::SetCaseSwitch_s(FuelLampKeyAddress, 0);
 		}
-
-		if (GearKeyAddress)
-		{			
-			if (c_currentgear <= 12){
-				b3d::SetCaseSwitch_s(GearKeyAddress, *(DWORD *)0x6F346C);
-			}
-			if (c_currentgear > 12){
-				b3d::SetCaseSwitch_s(GearKeyAddress, 12);
-			}
-		}
-
+		
+		b3d::SetCaseSwitch_s(GearKeyAddress, c_currentgear);
 		b3d::SetCaseSwitch_s(ParkKeyAddress, c_handbrakeState);
 		b3d::SetCaseSwitch_s(AvtoKeyAddress, *(int *)0x6F3470);
 
@@ -944,6 +937,20 @@ void Update()
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
 }
 
+string inttohex(int a)
+{
+    string tmp("");
+    do
+    {
+        int r(a%16);
+        if (r>9) {r+=(int)'A'-10;}
+        else  {r+=(int)'0';};
+        tmp=(char)r+tmp;
+        a/=16;
+    } while (a);
+    return tmp;
+}
+
 void Process()
 {
 	Update();
@@ -972,15 +979,41 @@ void Process()
 	}
 
 	if (GetAsyncKeyState(0x49) & 0x8000){ //I
-		//*(int*)Vehicle.m_processVehicle = 0;
-		//GameApp::DisplayScreenMessage((char*)(to_string(*(int*)Vehicle.m_processVehicle)).c_str());
-		GameApp::DisplayScreenMessage((char *) (to_string(*(float*)Vehicle.m_position[0]) + " " + to_string(*(float*)Vehicle.m_position[1]) + " " + to_string(*(float*)Vehicle.m_position[2])).c_str());
+		GameApp::DisplayScreenMessage((char *) (to_string( b3d::GetChildCount(Panel.GearKeyAddress))).c_str());
+		//GameApp::DisplayScreenMessage("не та клавиша");
 	}
 	
-	if (GetAsyncKeyState(0x4F) & 0x8000){ //K
+	if (GetAsyncKeyState(0x4F) & 0x8000){ //O
 		//*(int*)Vehicle.m_processVehicle = 1;
 		//GameApp::DisplayScreenMessage((char*)(to_string(*(int*)Vehicle.m_processVehicle)).c_str());
-		Vehicle.m_position[2] += 10;
+
+		////////////////0x34 - child count
+		////////////////0x38 - current switch
+		//////////////// !!!!!!!!! (int)(Panel.GearKeyAddress) + 0x38 !!!!!!
+
+		/*char buffer_1[64];
+		char buffer_2[64];
+		char buffer_3[64];
+		char buffer_4[64];
+
+		sprintf(buffer_1, "GearKey: %d", Panel.GearKeyAddress);
+		PrintUserLog((char*)buffer_1);
+
+		sprintf(buffer_2, "GearKey (типо шестандцатирчиное число): %d", inttohex((int)Panel.GearKeyAddress));
+		PrintUserLog((char*)buffer_2);
+
+		sprintf(buffer_3, "GearKey (значение): %d", *Panel.GearKeyAddress);
+		PrintUserLog((char*)buffer_3);
+
+		sprintf(buffer_4, "GearKey (copy&paste из c-подобного кода): %d", (int)(Panel.GearKeyAddress + 0x38));
+		PrintUserLog((char*)buffer_4);
+
+		GameApp::DisplayScreenMessage((char *) (to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x38) ) + "\n" + to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x34) )).c_str());*/
+
+		GameApp::DisplayScreenMessage((char *) (to_string( b3d::GetCaseSwitch(Panel.GearKeyAddress))).c_str());
+
+		//GameApp::DisplayScreenMessage((char*)(to_string( *(Panel.GearKeyAddress) )).c_str());
+		//Vehicle.m_position[2] += 1;
 	}
 
 	if (!(Panel.PanelKey)){
