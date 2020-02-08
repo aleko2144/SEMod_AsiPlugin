@@ -898,8 +898,6 @@ void GetInput()
 	}
 }
 
-int playerVehicle_offset_static;
-
 void CustomRes(){
 	int offsetX = xres - 225;
 	int *BackInfoPosX = (int*)0x6CED3C;
@@ -1043,19 +1041,14 @@ void A_Signals()
 
 bool VehicleChanged()
 {
-	bool IsVehicleChanged = false;
-
 	int playerVehicle_current = *(DWORD *)(Viewer + 616);
 
 	if (Vehicle.m_offset != playerVehicle_current){
-		Vehicle.m_offset = playerVehicle_current;
-		IsVehicleChanged = true;
+		return true;
 	}
 	else{
-		IsVehicleChanged = false;
+		return false;
 	}
-
-	return IsVehicleChanged;
 }
 
 void PrepareValues(){
@@ -1095,20 +1088,6 @@ void Update()
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
 }
 
-string inttohex(int a)
-{
-    string tmp("");
-    do
-    {
-        int r(a%16);
-        if (r>9) {r+=(int)'A'-10;}
-        else  {r+=(int)'0';};
-        tmp=(char)r+tmp;
-        a/=16;
-    } while (a);
-    return tmp;
-}
-
 void Process()
 {
 	Update();
@@ -1142,36 +1121,12 @@ void Process()
 	}
 	
 	if (GetAsyncKeyState(0x4F) & 0x8000){ //O
-		//*(int*)Vehicle.m_processVehicle = 1;
-		//GameApp::DisplayScreenMessage((char*)(to_string(*(int*)Vehicle.m_processVehicle)).c_str());
 
 		////////////////0x34 - child count
 		////////////////0x38 - current switch
 		//////////////// !!!!!!!!! (int)(Panel.GearKeyAddress) + 0x38 !!!!!!
-
-		/*char buffer_1[64];
-		char buffer_2[64];
-		char buffer_3[64];
-		char buffer_4[64];
-
-		sprintf(buffer_1, "GearKey: %d", Panel.GearKeyAddress);
-		PrintUserLog((char*)buffer_1);
-
-		sprintf(buffer_2, "GearKey (типо шестандцатирчиное число): %d", inttohex((int)Panel.GearKeyAddress));
-		PrintUserLog((char*)buffer_2);
-
-		sprintf(buffer_3, "GearKey (значение): %d", *Panel.GearKeyAddress);
-		PrintUserLog((char*)buffer_3);
-
-		sprintf(buffer_4, "GearKey (copy&paste из c-подобного кода): %d", (int)(Panel.GearKeyAddress + 0x38));
-		PrintUserLog((char*)buffer_4);
-
-		GameApp::DisplayScreenMessage((char *) (to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x38) ) + "\n" + to_string( *(int*)((int)(Panel.GearKeyAddress) + 0x34) )).c_str());*/
-
 		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetCaseSwitch() )).c_str());
 
-		//GameApp::DisplayScreenMessage((char*)(to_string( *(Panel.GearKeyAddress) )).c_str());
-		//Vehicle.m_position[2] += 1;
 	}
 	PrintDebugLog("Process() executed");
 }
