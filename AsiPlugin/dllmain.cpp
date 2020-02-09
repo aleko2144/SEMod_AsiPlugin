@@ -3,7 +3,9 @@
 #include <windows.h>
 #include <string>
 
+//#include "b3d.h"
 #include "new_structures.h"
+//#include "BlockSpace.h"
 #include "GameApp.h"
 
 bool keyPressed = false;
@@ -112,7 +114,7 @@ public:
 	int *offset;
 	void Clear()
 	{
-		offset = 0;
+		offset = nullptr;
 	}
 	CBlock()
 	{
