@@ -12,7 +12,7 @@ namespace GameApp
 	void PlaySoundLocated(int soundFile, float a2, float a3, Vector3D *Position);
 	int GetPlayerID();
 	double GetPlayerCapital(int playerID);
-	int GetActionState(DWORD *a1, int a2);
+	bool GetActionState(int a2);
 }
 
 #endif
