@@ -8,13 +8,13 @@ namespace GameApp
 	void DisplayScreenMessage(char* text)
 	{
 		typedef int(*textcall2)(void* a1);
-		int ret = textcall2(0x484050)(text); //выводит текст на панель
+		int ret = textcall2(0x484050)(text); //РІС‹РІРѕРґРёС‚ С‚РµРєСЃС‚ РЅР° РїР°РЅРµР»СЊ
 	}
 
 	void DisplayPagerMessage(char* text)
 	{
 		typedef int(*textcall2)(void* a1);
-		int ret = textcall2(0x56ADF0)(text); //выводит текст на панель
+		int ret = textcall2(0x56ADF0)(text); //РІС‹РІРѕРґРёС‚ С‚РµРєСЃС‚ РЅР° РїР°РЅРµР»СЊ
 	}
 
 	int SearchResourceSND(char *a1)
@@ -55,9 +55,10 @@ namespace GameApp
 		return ret;
 	}
 
-	int GetActionState(DWORD *a1, int a2)
+	int GetActionState_(int *a1, int a2)
 	{
 		int result;
+		int to_return;
 
 		result = (int)a1[a2 + 66];
 
@@ -70,10 +71,22 @@ namespace GameApp
 			}
 		}
 
-		if (result != 1){
+		result = a1[a2 + 113];
+		if ( result && (result_LOBYTE = *(BYTE *)result, (BYTE)result) )
+			result = (unsigned __int8)result;
+		else
 			result = 0;
-		}
 
 		return result;
+	}
+
+	bool GetActionState(int a2)
+	{
+		if (GetActionState_((int *)0x6D1DD8, a2) == 1){
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
