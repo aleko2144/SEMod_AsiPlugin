@@ -3,9 +3,7 @@
 #include <windows.h>
 #include <string>
 
-//#include "b3d.h"
 #include "new_structures.h"
-//#include "BlockSpace.h"
 #include "GameApp.h"
 
 bool keyPressed = false;
@@ -915,9 +913,6 @@ float cam_rot = 0;
 
 void A_Cam()
 {
-	int CamZoomInKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 24);
-	int CamZoomOutKeyState = GameApp::GetActionState((DWORD *)0x6D1DD8, 25);
-
 	RECT desktop;
 	const HWND hDesktop = GetDesktopWindow();
 	GetWindowRect(hDesktop, &desktop);
@@ -957,10 +952,10 @@ void A_Cam()
 		float max_zoom = mid_zoom - 5;
 		float min_zoom = mid_zoom + 5;
 
-		if (CamZoomInKeyState == 1){ //home key ; GetAsyncKeyState(0x24) & 0x8000
+		if (GameApp::GetActionState(24)){ //home key ; GetAsyncKeyState(0x24) & 0x8000
 				zoom += 0.025;
 		}
-		if (CamZoomOutKeyState == 1){ //end key ; GetAsyncKeyState(0x23) & 0x8000
+		if (GameApp::GetActionState(25)){ //end key ; GetAsyncKeyState(0x23) & 0x8000
 				zoom -= 0.025;
 		}
 
@@ -1116,7 +1111,15 @@ void Process()
 	}
 
 	if (GetAsyncKeyState(0x49) & 0x8000){ //I
-		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetChildCount() )).c_str());
+		GameApp::DisplayScreenMessage((char*)(to_string(GameApp::GetActionState(0))).c_str());
+
+		//if (sub_530010((int *)0x6D1DD8, 0) != 0){
+		//	GameApp::DisplayScreenMessage("1");
+		//}
+		//else{
+		//	GameApp::DisplayScreenMessage("0");
+		//}
+		//GameApp::DisplayScreenMessage((char *) (to_string( sub_530010( (DWORD *)0x6D1DD8, 0 ) )).c_str());
 		//GameApp::DisplayScreenMessage("не та клавиша");
 	}
 	
