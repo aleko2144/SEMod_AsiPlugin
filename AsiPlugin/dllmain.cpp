@@ -43,6 +43,10 @@ int ind_onSound;
 int ind_offSound;
 int ind_relaySound;
 
+int TurnSignalRKey = 0;
+int TurnSignalLKey = 0;
+bool TurnSignals = false;
+
 using namespace std;
 
 bool ReadBooleanFromIni(string selection, string varname, string default_val, string filename){
@@ -813,6 +817,7 @@ public:
 
 CVehicle Vehicle;
 CPanel Panel;
+Vector3D VehiclePosition;
 
 void ReadParamsFromIni(){
 	UseCustomRes = ReadBooleanFromIni("COMMON", "UseCustomRes", "off", ".\\SEMod.ini");
@@ -828,6 +833,9 @@ void ReadParamsFromIni(){
 	Panel.TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
 	Panel.FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
 	MouseSens = GetPrivateProfileFloat("CAMERA", "MouseSens", "1.0", ".\\SEMod.ini");
+	TurnSignalRKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalRKey", 0, ".\\SEMod.ini");
+	TurnSignalLKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalLKey", 0, ".\\SEMod.ini");
+	TurnSignals = ReadBooleanFromIni("COMMON", "TurnSignals", "off", ".\\SEMod.ini");
 }
 
 bool IsKeyPressed(int key)
@@ -837,33 +845,39 @@ bool IsKeyPressed(int key)
 
 void GetInput()
 {
-	if (IsKeyPressed(0xBE)) {
+	if (IsKeyPressed(TurnSignalRKey)) {
 		if (!keyPressed) {
 			keyPressed = true;
-			if (!TurnSignalLState) { 
-				TurnSignalRState = !TurnSignalRState;
-				if (TurnSignalRState == true){
-					GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
+			if (TurnSignals)
+			{
+				if (!TurnSignalLState) { 
+					TurnSignalRState = !TurnSignalRState;
+					if (TurnSignalRState == true){
+						GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
+					}
+					else{
+						GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
+					}
+					TS_TickCountStart = GetTickCount();
 				}
-				else{
-					GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
-				}
-				TS_TickCountStart = GetTickCount();
 			}
 		}
 	}
-	else if (IsKeyPressed(0xBC)) {
+	else if (IsKeyPressed(TurnSignalLKey)) {
 		if (!keyPressed) {
 			keyPressed = true;
-			if (!TurnSignalRState) { 
-				TurnSignalLState = !TurnSignalLState; 
-				if (TurnSignalLState == true){
-					GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
+			if (TurnSignals)
+			{
+				if (!TurnSignalRState) { 
+					TurnSignalLState = !TurnSignalLState; 
+					if (TurnSignalLState == true){
+						GameApp::PlaySound_(ind_onSound, 1.0, 1.0);
+					}
+					else{
+						GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
+					}
+					TS_TickCountStart = GetTickCount();
 				}
-				else{
-					GameApp::PlaySound_(ind_offSound, 1.0, 1.0);
-				}
-				TS_TickCountStart = GetTickCount();
 			}
 		}
 	}
@@ -1083,6 +1097,10 @@ void Update()
 	cameraMode = *(DWORD *)(*(DWORD *)0x6D2098 + 1400);
 	Vehicle.Update();
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
+
+	VehiclePosition.x = 0; //*(DOUBLE *)0x68BAD0
+	VehiclePosition.y = 0; //*(DOUBLE *)0x68BAD8
+	VehiclePosition.z = 0; //*(DOUBLE *)0x68BAE0
 }
 
 void Process()
@@ -1101,7 +1119,9 @@ void Process()
 		PrintDebugLog("dllmain.cpp - camera func");
 	}
 
-	A_Signals();
+	if (TurnSignals) {
+		A_Signals();
+	}
 
 	if (DisplayPanel){
 		if (cameraMode != 0){
@@ -1113,7 +1133,9 @@ void Process()
 	}
 
 	if (GetAsyncKeyState(0x49) & 0x8000){ //I
-		GameApp::DisplayScreenMessage((char*)(to_string(GameApp::GetActionState(0))).c_str());
+		PrintUserLog((char*)(to_string((int)&VehiclePosition)).c_str());
+		GameApp::DisplayScreenMessage((char*)(to_string(VehiclePosition.x) + " " + to_string(VehiclePosition.y) + " " + to_string(VehiclePosition.z)).c_str());
+		//GameApp::DisplayScreenMessage((char*)(to_string(GameApp::GetActionState(0))).c_str());
 
 		//if (sub_530010((int *)0x6D1DD8, 0) != 0){
 		//	GameApp::DisplayScreenMessage("1");
@@ -1130,6 +1152,7 @@ void Process()
 		////////////////0x34 - child count
 		////////////////0x38 - current switch
 		//////////////// !!!!!!!!! (int)(Panel.GearKeyAddress) + 0x38 !!!!!!
+		GameApp::PlaySoundLocated(ind_relaySound, 5.0, 5.0, &VehiclePosition);
 		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetCaseSwitch() )).c_str());
 
 	}
