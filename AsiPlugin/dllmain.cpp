@@ -31,6 +31,7 @@ bool ML_IntView = false;
 bool ML_OutView = false;
 bool WriteDebugLog = false;
 bool WriteWarnLog = false;
+bool CustomSounds = false;
 
 float MouseSens = 0.0;
 float zoom = 0.5;
@@ -46,6 +47,14 @@ int ind_relaySound;
 int TurnSignalRKey = 0;
 int TurnSignalLKey = 0;
 bool TurnSignals = false;
+
+int c_idleSound;
+int c_fullSound;
+
+int idleSound;
+int fullSound;
+int jidleSound;
+int jfullSound;
 
 using namespace std;
 
@@ -70,6 +79,13 @@ float GetPrivateProfileFloat(string selection, string varname, string default_va
 	to_return = atof(returnedString);
 	return to_return;
 }
+string GetPrivateProfileStr(string selection, string varname, string default_val, string filename){
+	char* returnedString = new char[512];
+	GetPrivateProfileStringA(selection.c_str(), varname.c_str(), default_val.c_str(), returnedString, 512, filename.c_str());
+	string result = returnedString;
+	return result;
+}
+
 void PrintUserLog(const char *text)
 {
 	FILE *file = fopen("SEMod_output.log", "a");
@@ -397,6 +413,9 @@ public:
 	float *m_position[2]; // [0] - x; [1] - y; [2] - z
 	float *m_movingVelocity[2];
 	float *m_rotationVelocity[2];
+	///////////////////////////
+	string s_idleSound;
+	string s_fullSound;
 
 	void Clear()
 	{
@@ -457,14 +476,14 @@ public:
 		m_LightsKeyI.offset = m_LightsKeyI.FindGameObject(0, (m_cab_prefix + "LightsKey").c_str());
 		m_ParkKeyI.offset = m_ParkKeyI.FindGameObject(0, (m_cab_prefix + "ParkKey").c_str());
 		m_PriborKeyI.offset = m_PriborKeyI.FindGameObject(0, (m_cab_prefix + "PriborKey").c_str());
-		m_AnmInt_FuelCoeff = GetPrivateProfileFloat(m_cab_prefix, "FuelCoeff", "0", ".\\SEMod.ini");
-		m_AnmInt_EcoCoeff = GetPrivateProfileFloat(m_cab_prefix, "EcoCoeff", "0", ".\\SEMod.ini");
-		m_AnmInt_EcoMaxDeg = GetPrivateProfileFloat(m_cab_prefix, "EcoMaxDeg", "0", ".\\SEMod.ini");
-		m_AnmInt_AKBCoeff = GetPrivateProfileFloat(m_cab_prefix, "AKBCoeff", "0", ".\\SEMod.ini");
-		m_AnmInt_AKBMaxDeg = GetPrivateProfileFloat(m_cab_prefix, "AKBMaxDeg", "0", ".\\SEMod.ini");
+		m_AnmInt_FuelCoeff = GetPrivateProfileFloat(m_car_prefix, "FuelCoeff", "0", ".\\SEMod_vehicles.ini");
+		m_AnmInt_EcoCoeff = GetPrivateProfileFloat(m_car_prefix, "EcoCoeff", "0", ".\\SEMod_vehicles.ini");
+		m_AnmInt_EcoMaxDeg = GetPrivateProfileFloat(m_car_prefix, "EcoMaxDeg", "0", ".\\SEMod_vehicles.ini");
+		m_AnmInt_AKBCoeff = GetPrivateProfileFloat(m_car_prefix, "AKBCoeff", "0", ".\\SEMod_vehicles.ini");
+		m_AnmInt_AKBMaxDeg = GetPrivateProfileFloat(m_car_prefix, "AKBMaxDeg", "0", ".\\SEMod_vehicles.ini");
 		/////
 		m_mass = 0;
-		m_massMax = GetPrivateProfileIntA("CARGO", (m_car_prefix + "Mass").c_str(), 0, ".\\SEMod.ini");
+		m_massMax = GetPrivateProfileIntA("m_car_prefix", "mass_max", 0, ".\\SEMod_vehicles.ini");
 		m_CargoKey.offset = m_CargoKey.FindGameObject(0, (m_car_prefix + "CargoKey").c_str());
 		/////
 		m_TurnSignalRAddress.offset = m_TurnSignalRAddress.FindGameObject(0, (m_car_prefix + "TurnSignalR").c_str());
@@ -473,6 +492,9 @@ public:
 		m_TurnSignalL_IAddress.offset = m_TurnSignalL_IAddress.FindGameObject(0, (m_cab_prefix + "TurnSignalL_I").c_str());
 		////////////////////////////
 		m_processVehicle = 0;
+		/////////////////
+		s_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_sound", "idleSound", ".\\SEMod_vehicles.ini");
+		s_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_sound", "fullSound", ".\\SEMod_vehicles.ini");
 
 		if (!m_AKBSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
@@ -819,6 +841,9 @@ CVehicle Vehicle;
 CPanel Panel;
 Vector3D VehiclePosition;
 
+// gViewerSounds	006D1CF0	
+
+
 void ReadParamsFromIni(){
 	UseCustomRes = ReadBooleanFromIni("COMMON", "UseCustomRes", "off", ".\\SEMod.ini");
 	AutoInd = ReadBooleanFromIni("COMMON", "AutoInd", "off", ".\\SEMod.ini");
@@ -829,12 +854,13 @@ void ReadParamsFromIni(){
 	DebugMode = ReadBooleanFromIni("COMMON", "DebugMode", "off", ".\\SEMod.ini");
 	WriteDebugLog = ReadBooleanFromIni("COMMON", "WriteDebugLog", "off", ".\\SEMod.ini");
 	WriteWarnLog = ReadBooleanFromIni("COMMON", "WriteWarnLog", "off", ".\\SEMod.ini");
+	CustomSounds = ReadBooleanFromIni("COMMON", "CustomSounds", "off", ".\\SEMod.ini");
 	Panel.SpeedCoeff = GetPrivateProfileFloat("COMMON", "SpeedCoeff", "2.25", ".\\SEMod.ini");
 	Panel.TachoCoeff = GetPrivateProfileFloat("COMMON", "TachoCoeff", "10.8", ".\\SEMod.ini");
 	Panel.FuelCoeff = GetPrivateProfileFloat("COMMON", "FuelCoeff", "135.0", ".\\SEMod.ini");
 	MouseSens = GetPrivateProfileFloat("CAMERA", "MouseSens", "1.0", ".\\SEMod.ini");
-	TurnSignalRKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalRKey", 0, ".\\SEMod.ini");
-	TurnSignalLKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalLKey", 0, ".\\SEMod.ini");
+	TurnSignalRKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalRKey", 190, ".\\SEMod.ini");
+	TurnSignalLKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalLKey", 188, ".\\SEMod.ini");
 	TurnSignals = ReadBooleanFromIni("COMMON", "TurnSignals", "off", ".\\SEMod.ini");
 }
 
@@ -1074,6 +1100,14 @@ void PrepareValues(){
 	ind_relaySound = GameApp::SearchResourceSND("ind_relaySound");
 	ind_offSound = GameApp::SearchResourceSND("ind_offSound");
 
+	c_idleSound = GameApp::SearchResourceSND((char*)(Vehicle.s_idleSound).c_str());
+	c_fullSound = GameApp::SearchResourceSND((char*)(Vehicle.s_fullSound).c_str());
+
+	idleSound = GameApp::SearchResourceSND("idleSound");
+	fullSound = GameApp::SearchResourceSND("fullSound");
+	jidleSound = GameApp::SearchResourceSND("jidleSound");
+	jfullSound = GameApp::SearchResourceSND("jfullSound");
+
 	if (Viewer)
 	{
 		AreValuesSet = true;
@@ -1088,8 +1122,50 @@ void ResetValues(){
 	ind_relaySound = 0;
 	ind_offSound = 0;
 
+	c_idleSound = 0;
+	c_fullSound = 0;
+
+	idleSound = 0;
+	fullSound = 0;
+	jidleSound = 0;
+	jfullSound = 0;
+
 	IsGUIFixed = false;
 	AreValuesSet = false;
+}
+
+void AdvancedSounds()
+{
+	int *g_idleSound = (int*)0x6D1D20;
+	int *g_fullSound = (int*)0x6D1D24;
+	int *g_jidleSound = (int*)0x6D1D28;
+	int *g_jfullSound = (int*)0x6D1D2C;
+
+
+	//dword_6D1D20 - idleSound
+	//dword_6D1D24 - fullSound
+	//dword_6D1D28 - jidleSound
+	//dword_6D1D2C - jfullSound
+
+	// && - И
+	// || - ИЛИ
+
+	if (Vehicle.s_idleSound != "idleSound" && Vehicle.s_fullSound != "fullSound") {
+		if (Vehicle.m_mass > 3000) {
+			g_idleSound[0] = c_idleSound;
+			g_fullSound[0] = c_fullSound;
+		}
+		else {
+			g_jidleSound[0] = c_idleSound;
+			g_jfullSound[0] = c_fullSound;
+		}
+	}
+	else {
+		g_idleSound[0] = idleSound;
+		g_fullSound[0] = fullSound;
+		g_jidleSound[0] = jidleSound;
+		g_jfullSound[0] = jfullSound;
+	}
 }
 
 void Update()
@@ -1123,6 +1199,10 @@ void Process()
 		A_Signals();
 	}
 
+	if (CustomSounds) {
+		AdvancedSounds();
+	}
+
 	if (DisplayPanel){
 		if (cameraMode != 0){
 			Panel.SetVisiblity(true);
@@ -1132,7 +1212,12 @@ void Process()
 		}
 	}
 
-	if (GetAsyncKeyState(0x49) & 0x8000){ //I
+	if (GetAsyncKeyState(0x4F) & 0x8000){
+		int fullsnd = GameApp::SearchResourceSND("fullSound");
+		PrintUserLog((char*)(to_string((int)fullsnd)).c_str());
+	}
+
+	/*if (GetAsyncKeyState(0x49) & 0x8000){ //I
 		PrintUserLog((char*)(to_string((int)&VehiclePosition)).c_str());
 		GameApp::DisplayScreenMessage((char*)(to_string(VehiclePosition.x) + " " + to_string(VehiclePosition.y) + " " + to_string(VehiclePosition.z)).c_str());
 		//GameApp::DisplayScreenMessage((char*)(to_string(GameApp::GetActionState(0))).c_str());
@@ -1155,7 +1240,8 @@ void Process()
 		GameApp::PlaySoundLocated(ind_relaySound, 5.0, 5.0, &VehiclePosition);
 		GameApp::DisplayScreenMessage((char *) (to_string( Panel.GearKey.GetCaseSwitch() )).c_str());
 
-	}
+	}*/
+
 	PrintDebugLog("Process() executed");
 }
 
