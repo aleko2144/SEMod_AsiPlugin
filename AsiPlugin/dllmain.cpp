@@ -1141,6 +1141,41 @@ void AdvancedSounds()
 	int *g_jidleSound = (int*)0x6D1D28;
 	int *g_jfullSound = (int*)0x6D1D2C;
 
+	if (Vehicle.m_mass > 3000) {
+		if (c_idleSound) {
+			g_idleSound[0] = c_idleSound;
+		}
+		else {
+			g_idleSound[0] = idleSound;
+		}
+
+		if (c_fullSound) {
+			g_fullSound[0] = c_fullSound;
+		}
+		else {
+			g_fullSound[0] = fullSound;
+		}
+	}
+	else {
+		if (c_idleSound) {
+			g_jidleSound[0] = c_idleSound;
+		}
+		else {
+			g_jidleSound[0] = jidleSound;
+		}
+
+		if (c_fullSound) {
+			g_jfullSound[0] = c_fullSound;
+		}
+		else {
+			g_jfullSound[0] = jfullSound;
+		}
+	}
+
+	if (GameApp::GetActionState(23)) //lights key
+	{
+		GameApp::PlaySound_(GameApp::SearchResourceSND("buttonSound"), 1.0, 1.0);
+	}
 
 	//dword_6D1D20 - idleSound
 	//dword_6D1D24 - fullSound
@@ -1150,6 +1185,7 @@ void AdvancedSounds()
 	// && - И
 	// || - ИЛИ
 
+	/*
 	if (Vehicle.s_idleSound != "idleSound" && Vehicle.s_fullSound != "fullSound") {
 		if (Vehicle.m_mass > 3000) {
 			g_idleSound[0] = c_idleSound;
@@ -1166,6 +1202,7 @@ void AdvancedSounds()
 		g_jidleSound[0] = jidleSound;
 		g_jfullSound[0] = jfullSound;
 	}
+	*/
 }
 
 void Update()
@@ -1212,10 +1249,10 @@ void Process()
 		}
 	}
 
-	if (GetAsyncKeyState(0x4F) & 0x8000){
-		int fullsnd = GameApp::SearchResourceSND("fullSound");
-		PrintUserLog((char*)(to_string((int)fullsnd)).c_str());
-	}
+	//if (GetAsyncKeyState(0x4F) & 0x8000){
+	//	int fullsnd = GameApp::SearchResourceSND("fullSound");
+	//	PrintUserLog((char*)(to_string((int)fullsnd)).c_str());
+	//}
 
 	/*if (GetAsyncKeyState(0x49) & 0x8000){ //I
 		PrintUserLog((char*)(to_string((int)&VehiclePosition)).c_str());
