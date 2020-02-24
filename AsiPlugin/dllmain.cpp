@@ -48,8 +48,10 @@ int TurnSignalRKey = 0;
 int TurnSignalLKey = 0;
 bool TurnSignals = false;
 
-int c_idleSound;
-int c_fullSound;
+int c_int_idleSound;
+int c_int_fullSound;
+int c_ext_idleSound;
+int c_ext_fullSound;
 
 int idleSound;
 int fullSound;
@@ -414,8 +416,10 @@ public:
 	float *m_movingVelocity[2];
 	float *m_rotationVelocity[2];
 	///////////////////////////
-	string s_idleSound;
-	string s_fullSound;
+	string s_int_idleSound;
+	string s_int_fullSound;
+	string s_ext_idleSound;
+	string s_ext_fullSound;
 
 	void Clear()
 	{
@@ -493,8 +497,10 @@ public:
 		////////////////////////////
 		m_processVehicle = 0;
 		/////////////////
-		s_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_sound", "idleSound", ".\\SEMod_vehicles.ini");
-		s_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_sound", "fullSound", ".\\SEMod_vehicles.ini");
+		s_int_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_int_sound", "idleSound", ".\\SEMod_vehicles.ini");
+		s_int_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_int_sound", "fullSound", ".\\SEMod_vehicles.ini");
+		s_ext_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_ext_sound", "idleSound", ".\\SEMod_vehicles.ini");
+		s_ext_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_ext_sound", "fullSound", ".\\SEMod_vehicles.ini");
 
 		if (!m_AKBSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
@@ -1100,8 +1106,10 @@ void PrepareValues(){
 	ind_relaySound = GameApp::SearchResourceSND("ind_relaySound");
 	ind_offSound = GameApp::SearchResourceSND("ind_offSound");
 
-	c_idleSound = GameApp::SearchResourceSND((char*)(Vehicle.s_idleSound).c_str());
-	c_fullSound = GameApp::SearchResourceSND((char*)(Vehicle.s_fullSound).c_str());
+	c_int_idleSound = GameApp::SearchResourceSND((char*)(Vehicle.s_int_idleSound).c_str());
+	c_int_fullSound = GameApp::SearchResourceSND((char*)(Vehicle.s_int_fullSound).c_str());
+	c_ext_idleSound = GameApp::SearchResourceSND((char*)(Vehicle.s_ext_idleSound).c_str());
+	c_ext_fullSound = GameApp::SearchResourceSND((char*)(Vehicle.s_ext_fullSound).c_str());
 
 	idleSound = GameApp::SearchResourceSND("idleSound");
 	fullSound = GameApp::SearchResourceSND("fullSound");
@@ -1122,8 +1130,10 @@ void ResetValues(){
 	ind_relaySound = 0;
 	ind_offSound = 0;
 
-	c_idleSound = 0;
-	c_fullSound = 0;
+	c_int_idleSound = 0;
+	c_int_fullSound = 0;
+	c_ext_idleSound = 0;
+	c_ext_fullSound = 0;
 
 	idleSound = 0;
 	fullSound = 0;
@@ -1140,6 +1150,18 @@ void AdvancedSounds()
 	int *g_fullSound = (int*)0x6D1D24;
 	int *g_jidleSound = (int*)0x6D1D28;
 	int *g_jfullSound = (int*)0x6D1D2C;
+
+	int c_idleSound;
+	int c_fullSound;
+
+	if (cameraMode) {
+		c_idleSound = c_ext_idleSound;
+		c_fullSound = c_ext_fullSound;
+	}
+	else {
+		c_idleSound = c_int_idleSound;
+		c_fullSound = c_int_fullSound;
+	}
 
 	if (Vehicle.m_mass > 3000) {
 		if (c_idleSound) {
@@ -1241,7 +1263,7 @@ void Process()
 	}
 
 	if (DisplayPanel){
-		if (cameraMode != 0){
+		if (cameraMode){
 			Panel.SetVisiblity(true);
 		}
 		else{
