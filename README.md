@@ -10,7 +10,7 @@
 
 #### [Сообщество во ВК](https://vk.com/rnr_mods)
 
-### Файлы:
+### Файлы и функции:
 #### .\AsiPlugin\dllmain.cpp - основа:
 #### ReadBooleanFromIni - чтение bool'ов из ini;
 #### GetPrivateProfileFloat - чтение float из ini;
