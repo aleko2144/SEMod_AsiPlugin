@@ -25,10 +25,10 @@ namespace GameApp
 		//char *__cdecl sub_5EF380(char *a1)
 	}
 
-	void PlaySound_(int soundFile, float a2, float a3)
+	void PlaySound_(int soundFile, float right_channel_volume, float left_channel_volume)
 	{
-		typedef int(*PlayResSound)(int soundFile, float a2, float a3);
-		int ret = PlayResSound(0x4E52C0)(soundFile, a2, a3);
+		typedef int(*PlayResSound)(int soundFile, float right_channel_volume, float left_channel_volume);
+		int ret = PlayResSound(0x4E52C0)(soundFile, right_channel_volume, left_channel_volume);
 	}
 
 	void PlaySoundLocated(int soundFile, float a2, float a3, Vector3D *Position)
