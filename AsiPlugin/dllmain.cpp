@@ -32,6 +32,7 @@ bool ML_OutView = false;
 bool WriteDebugLog = false;
 bool WriteWarnLog = false;
 bool CustomSounds = false;
+bool UseD2GI = false;
 
 float MouseSens = 0.0;
 float zoom = 0.5;
@@ -53,10 +54,19 @@ int c_int_fullSound;
 int c_ext_idleSound;
 int c_ext_fullSound;
 
+int c_startSound;
+int c_stopSound;
+int c_startglochSound;
+
 int idleSound;
 int fullSound;
 int jidleSound;
 int jfullSound;
+int start0Sound;
+int stop_engSound;
+int startglochSound;
+
+int accelSound;
 
 using namespace std;
 
@@ -123,6 +133,11 @@ void PrintWarnLog(const char *text)
 			fclose(file);
 		}
 	}
+}
+
+float GetDistanceBetweenPoints(float point_x, float endpoint_x, float point_y, float endpoint_y)
+{
+	return sqrt(pow((point_x - endpoint_x), 2) + pow((point_y - endpoint_y), 2));
 }
 
 //sub_4BC2C0 - дым?
@@ -420,6 +435,9 @@ public:
 	string s_int_fullSound;
 	string s_ext_idleSound;
 	string s_ext_fullSound;
+	string s_startSound;
+	string s_stop_engSound;
+	string s_startglochSound;
 
 	void Clear()
 	{
@@ -501,6 +519,9 @@ public:
 		s_int_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_int_sound", "fullSound", ".\\SEMod_vehicles.ini");
 		s_ext_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_ext_sound", "idleSound", ".\\SEMod_vehicles.ini");
 		s_ext_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_ext_sound", "fullSound", ".\\SEMod_vehicles.ini");
+		s_startSound = GetPrivateProfileStr(m_car_prefix, "engine_start_sound", "start0Sound", ".\\SEMod_vehicles.ini");
+		s_startglochSound = GetPrivateProfileStr(m_car_prefix, "engine_start_fail_sound", "startglochSound", ".\\SEMod_vehicles.ini");
+		s_stop_engSound = GetPrivateProfileStr(m_car_prefix, "engine_stop_sound", "stop_engSound", ".\\SEMod_vehicles.ini");
 
 		if (!m_AKBSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
@@ -845,7 +866,6 @@ public:
 
 CVehicle Vehicle;
 CPanel Panel;
-Vector3D VehiclePosition;
 
 // gViewerSounds	006D1CF0	
 
@@ -868,6 +888,7 @@ void ReadParamsFromIni(){
 	TurnSignalRKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalRKey", 190, ".\\SEMod.ini");
 	TurnSignalLKey = GetPrivateProfileIntA("KEYBINDINGS", "TurnSignalLKey", 188, ".\\SEMod.ini");
 	TurnSignals = ReadBooleanFromIni("COMMON", "TurnSignals", "off", ".\\SEMod.ini");
+	UseD2GI = ReadBooleanFromIni("COMMON", "UseD2GI", "off", ".\\SEMod.ini");
 }
 
 bool IsKeyPressed(int key)
@@ -945,14 +966,18 @@ void GetInput()
 }
 
 void CustomRes(){
-	int offsetX = xres - 225;
-	int *BackInfoPosX = (int*)0x6CED3C;
-	int *something_var = (int*)0x6CED34;
-	int *MenuGasSpriteRectX = (int *)(*(DWORD *)(*(DWORD*)0x6CECCC + 0x38) + 0x2C);
+	if (UseCustomRes) {
+		int offsetX = xres - 225;
+		int *BackInfoPosX = (int*)0x6CED3C;
+		int *something_var = (int*)0x6CED34;
+		int *MenuGasSpriteRectX = (int *)(*(DWORD *)(*(DWORD*)0x6CECCC + 0x38) + 0x2C);
 
-	BackInfoPosX[0] = (xres - 385);
-	something_var[0] = offsetX;
-	MenuGasSpriteRectX[0] = (xres - 1024)/2;
+		BackInfoPosX[0] = (xres - 385);
+		something_var[0] = offsetX;
+		MenuGasSpriteRectX[0] = (xres - 1024)/2;
+	}
+
+	Panel.FixPosition();
 
 	IsGUIFixed = true;
 }
@@ -976,6 +1001,11 @@ void A_Cam()
 		//PrintUserLog((char *)("x: " + to_string(p.x) + " y: " + to_string(p.y)).c_str());
 		mouse_x = p.x - (horizontal/2);
 		mouse_y = p.y - (vertical/2);
+
+		//if (GameApp::GetActionState(20)) {
+		//	p.x = (horizontal/2);
+		//	p.y = (vertical/2);
+		//}
 	}
 
 	mouse_x = -mouse_x * MouseSens * 0.006;
@@ -1111,10 +1141,20 @@ void PrepareValues(){
 	c_ext_idleSound = GameApp::SearchResourceSND((char*)(Vehicle.s_ext_idleSound).c_str());
 	c_ext_fullSound = GameApp::SearchResourceSND((char*)(Vehicle.s_ext_fullSound).c_str());
 
+	c_startSound = GameApp::SearchResourceSND((char*)(Vehicle.s_startSound).c_str());
+	c_stopSound = GameApp::SearchResourceSND((char*)(Vehicle.s_stop_engSound).c_str());
+	c_startglochSound = GameApp::SearchResourceSND((char*)(Vehicle.s_startglochSound).c_str());
+
 	idleSound = GameApp::SearchResourceSND("idleSound");
 	fullSound = GameApp::SearchResourceSND("fullSound");
 	jidleSound = GameApp::SearchResourceSND("jidleSound");
 	jfullSound = GameApp::SearchResourceSND("jfullSound");
+
+	start0Sound = GameApp::SearchResourceSND("start0Sound");
+	stop_engSound = GameApp::SearchResourceSND("stop_engSound");
+	startglochSound = GameApp::SearchResourceSND("startglochSound");
+
+	accelSound = GameApp::SearchResourceSND("frei_accelSound");
 
 	if (Viewer)
 	{
@@ -1144,12 +1184,20 @@ void ResetValues(){
 	AreValuesSet = false;
 }
 
+bool accelKeyPressed = false;
+
+Vector3D VehiclePos;
+Vector3D ViewerPos;
+
 void AdvancedSounds()
 {
+	int *g_start0_sound = (int*)0x6D1D14;
 	int *g_idleSound = (int*)0x6D1D20;
 	int *g_fullSound = (int*)0x6D1D24;
 	int *g_jidleSound = (int*)0x6D1D28;
 	int *g_jfullSound = (int*)0x6D1D2C;
+	int *g_stop_eng_sound = (int*)0x6D1D18;
+	int *g_startgloch_sound = (int*)0x6D1D68;
 
 	int c_idleSound;
 	int c_fullSound;
@@ -1164,7 +1212,7 @@ void AdvancedSounds()
 	}
 
 	if (Vehicle.m_mass > 3000) {
-		if (c_idleSound) {
+		if (c_idleSound) { 
 			g_idleSound[0] = c_idleSound;
 		}
 		else {
@@ -1177,6 +1225,7 @@ void AdvancedSounds()
 		else {
 			g_fullSound[0] = fullSound;
 		}
+
 	}
 	else {
 		if (c_idleSound) {
@@ -1194,9 +1243,58 @@ void AdvancedSounds()
 		}
 	}
 
+	if (c_startSound) {
+		g_start0_sound[0] = c_startSound;
+	}
+	else {
+		g_start0_sound[0] = start0Sound;
+	}
+
+	if (c_startglochSound) {
+		g_startgloch_sound[0] = c_startglochSound;
+	}
+	else {
+		g_startgloch_sound[0] = startglochSound;
+	}
+
+	if (c_stopSound) {
+		g_stop_eng_sound[0] = c_stopSound;
+	}
+	else {
+		g_stop_eng_sound[0] = stop_engSound;
+	}
+
 	if (GameApp::GetActionState(23)) //lights key
 	{
 		GameApp::PlaySound_(GameApp::SearchResourceSND("buttonSound"), 1.0, 1.0);
+	}
+
+	float accel_volume;
+	float volume_from_func = 5.6 / (GetDistanceBetweenPoints(VehiclePos.x, ViewerPos.x, VehiclePos.y, ViewerPos.y));
+
+	if (cameraMode){ //coeff = 4.6
+		if (volume_from_func > 0.3){
+			accel_volume = 0.3;
+		}
+		else{
+			accel_volume = volume_from_func;
+		}
+	}
+	else{
+		accel_volume = 0.3;
+	}
+
+	if (GameApp::GetActionState(0) && Vehicle.m_currentGear > 1){
+		if (!accelKeyPressed){
+			accelKeyPressed = true;
+			if (Vehicle.m_rpm < 12.5){
+				GameApp::PlaySound_(accelSound, accel_volume, accel_volume);
+			}
+		}
+	}
+	else
+	{
+		accelKeyPressed = false;
 	}
 
 	//dword_6D1D20 - idleSound
@@ -1233,18 +1331,42 @@ void Update()
 	Vehicle.Update();
 	Panel.Process(Vehicle.m_speed, Vehicle.m_rpm, Vehicle.m_fuelLevel, Vehicle.m_kilometrage, Vehicle.m_currentGear, Vehicle.m_handbrakeState);
 
-	VehiclePosition.x = 0; //*(DOUBLE *)0x68BAD0
-	VehiclePosition.y = 0; //*(DOUBLE *)0x68BAD8
-	VehiclePosition.z = 0; //*(DOUBLE *)0x68BAE0
+	VehiclePos.x = *(DOUBLE *)0x68BAD0;
+	VehiclePos.y = *(DOUBLE *)0x68BAD8;
+	VehiclePos.z = *(DOUBLE *)0x68BAE0;
+	ViewerPos.x = *(float *)0x6F69AC;
+	ViewerPos.y = *(float *)0x6F69B0;
+	ViewerPos.z = *(float *)0x6F69B4;
+
+	//float var_x = camera_x - car_x;
+	//float var_y = camera_y - car_y;
+	//float var_z = camera_z - car_z;
+
+	//snd_pos.x = var_x;
+	//snd_pos.y = var_y;
+	//snd_pos.z = var_z;
+
+	//GameApp::DisplayScreenMessage((char *) (to_string(var_x) + " " + to_string(var_y) + " " + to_string(var_z)).c_str());
+
+	//GameApp::PlaySoundLocated(GameApp::SearchResourceSND("accelSound"), 5.0, 2.0, &snd_pos);
+}
+
+int GetVehState(int a1, DWORD *a2)
+{
+	typedef int(*GetVehState)(int a1, DWORD *a2);
+	int ret = GetVehState(0x579310)(a1, a2);
+	return ret;
 }
 
 void Process()
 {
 	Update();
-	if (UseCustomRes) {
+
+	if (UseCustomRes || UseD2GI) {
+
 		if (!IsGUIFixed){
 			CustomRes();
-			Panel.FixPosition();
+			//Panel.FixPosition();
 			PrintDebugLog("dllmain.cpp - custom res");
 		}
 	}
