@@ -66,6 +66,17 @@ int start0Sound;
 int stop_engSound;
 int startglochSound;
 
+int *g_start0_sound = (int*)0x6D1D14;
+int *g_idleSound = (int*)0x6D1D20;
+int *g_fullSound = (int*)0x6D1D24;
+int *g_jidleSound = (int*)0x6D1D28;
+int *g_jfullSound = (int*)0x6D1D2C;
+int *g_stop_eng_sound = (int*)0x6D1D18;
+int *g_startgloch_sound = (int*)0x6D1D68;
+
+int c_idleSound;
+int c_fullSound;
+
 int accelSound;
 
 using namespace std;
@@ -438,6 +449,9 @@ public:
 	string s_startSound;
 	string s_stop_engSound;
 	string s_startglochSound;
+	string s_accelSound;
+	float m_accel_rpm;
+
 
 	void Clear()
 	{
@@ -515,13 +529,15 @@ public:
 		////////////////////////////
 		m_processVehicle = 0;
 		/////////////////
-		s_int_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_int_sound", "idleSound", ".\\SEMod_vehicles.ini");
-		s_int_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_int_sound", "fullSound", ".\\SEMod_vehicles.ini");
-		s_ext_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_ext_sound", "idleSound", ".\\SEMod_vehicles.ini");
-		s_ext_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_ext_sound", "fullSound", ".\\SEMod_vehicles.ini");
-		s_startSound = GetPrivateProfileStr(m_car_prefix, "engine_start_sound", "start0Sound", ".\\SEMod_vehicles.ini");
-		s_startglochSound = GetPrivateProfileStr(m_car_prefix, "engine_start_fail_sound", "startglochSound", ".\\SEMod_vehicles.ini");
-		s_stop_engSound = GetPrivateProfileStr(m_car_prefix, "engine_stop_sound", "stop_engSound", ".\\SEMod_vehicles.ini");
+		s_int_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_int_sound", "", ".\\SEMod_vehicles.ini");
+		s_int_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_int_sound", "", ".\\SEMod_vehicles.ini");
+		s_ext_idleSound = GetPrivateProfileStr(m_car_prefix, "engine_idle_ext_sound", "", ".\\SEMod_vehicles.ini");
+		s_ext_fullSound = GetPrivateProfileStr(m_car_prefix, "engine_full_ext_sound", "", ".\\SEMod_vehicles.ini");
+		s_startSound = GetPrivateProfileStr(m_car_prefix, "engine_start_sound", "", ".\\SEMod_vehicles.ini");
+		s_startglochSound = GetPrivateProfileStr(m_car_prefix, "engine_start_fail_sound", "", ".\\SEMod_vehicles.ini");
+		s_stop_engSound = GetPrivateProfileStr(m_car_prefix, "engine_stop_sound", "", ".\\SEMod_vehicles.ini");
+		s_accelSound = GetPrivateProfileStr(m_car_prefix, "engine_accel_sound", "", ".\\SEMod_vehicles.ini");
+		m_accel_rpm = (GetPrivateProfileFloat(m_car_prefix, "engine_accel_rpm", "0", ".\\SEMod_vehicles.ini") / 100);
 
 		if (!m_AKBSpaceI.offset){
 			PrintWarnLog((char*)("Not found " + m_cab_prefix + "AKBSpace").c_str());
@@ -1154,7 +1170,7 @@ void PrepareValues(){
 	stop_engSound = GameApp::SearchResourceSND("stop_engSound");
 	startglochSound = GameApp::SearchResourceSND("startglochSound");
 
-	accelSound = GameApp::SearchResourceSND("frei_accelSound");
+	accelSound = GameApp::SearchResourceSND((char*)(Vehicle.s_accelSound).c_str());
 
 	if (Viewer)
 	{
@@ -1191,16 +1207,6 @@ Vector3D ViewerPos;
 
 void AdvancedSounds()
 {
-	int *g_start0_sound = (int*)0x6D1D14;
-	int *g_idleSound = (int*)0x6D1D20;
-	int *g_fullSound = (int*)0x6D1D24;
-	int *g_jidleSound = (int*)0x6D1D28;
-	int *g_jfullSound = (int*)0x6D1D2C;
-	int *g_stop_eng_sound = (int*)0x6D1D18;
-	int *g_startgloch_sound = (int*)0x6D1D68;
-
-	int c_idleSound;
-	int c_fullSound;
 
 	if (cameraMode) {
 		c_idleSound = c_ext_idleSound;
@@ -1211,7 +1217,9 @@ void AdvancedSounds()
 		c_fullSound = c_int_fullSound;
 	}
 
-	if (Vehicle.m_mass > 3000) {
+	//GameApp::DisplayScreenMessage((char*)(to_string(Vehicle.m_mass).c_str()));
+
+	if (Vehicle.m_mass > 3000.0) {
 		if (c_idleSound) { 
 			g_idleSound[0] = c_idleSound;
 		}
@@ -1273,21 +1281,21 @@ void AdvancedSounds()
 	float volume_from_func = 5.6 / (GetDistanceBetweenPoints(VehiclePos.x, ViewerPos.x, VehiclePos.y, ViewerPos.y));
 
 	if (cameraMode){ //coeff = 4.6
-		if (volume_from_func > 0.3){
-			accel_volume = 0.3;
+		if (volume_from_func > 0.25){
+			accel_volume = 0.25;
 		}
 		else{
 			accel_volume = volume_from_func;
 		}
 	}
 	else{
-		accel_volume = 0.3;
+		accel_volume = 0.25;
 	}
 
 	if (GameApp::GetActionState(0) && Vehicle.m_currentGear > 1){
 		if (!accelKeyPressed){
 			accelKeyPressed = true;
-			if (Vehicle.m_rpm < 12.5){
+			if (Vehicle.m_rpm < Vehicle.m_accel_rpm){
 				GameApp::PlaySound_(accelSound, accel_volume, accel_volume);
 			}
 		}
