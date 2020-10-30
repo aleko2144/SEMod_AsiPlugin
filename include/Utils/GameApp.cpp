@@ -1,20 +1,25 @@
 #include <windows.h>
 #include "GameApp.h"
-
-#include "new_structures.h"
+#include "..\Formats\CVector.h"
 
 namespace GameApp
 {
 	void DisplayScreenMessage(char* text)
 	{
 		typedef int(*textcall2)(void* a1);
-		int ret = textcall2(0x484050)(text); //РІС‹РІРѕРґРёС‚ С‚РµРєСЃС‚ РЅР° РїР°РЅРµР»СЊ
+		int ret = textcall2(0x484050)(text); //выводит текст на панель
 	}
 
 	void DisplayPagerMessage(char* text)
 	{
 		typedef int(*textcall2)(void* a1);
-		int ret = textcall2(0x56ADF0)(text);
+		int ret = textcall2(0x56ADF0)(text); //выводит текст на панель
+	}
+
+	int PlayVideo(char *a1, int a2)
+	{
+		typedef int(*PlayVideo)(char *a1, int a2);
+		int ret = PlayVideo(0x527970)(a1, a2);
 	}
 
 	int SearchResourceSND(char *a1)
@@ -25,15 +30,15 @@ namespace GameApp
 		//char *__cdecl sub_5EF380(char *a1)
 	}
 
-	void PlaySound_(int soundFile, float a2, float a3)
+	void PlaySound_(int soundFile, float right_channel_volume, float left_channel_volume)
 	{
-		typedef int(*PlayResSound)(int soundFile, float a2, float a3);
-		int ret = PlayResSound(0x4E52C0)(soundFile, a2, a3);
+		typedef int(*PlayResSound)(int soundFile, float right_channel_volume, float left_channel_volume);
+		int ret = PlayResSound(0x4E52C0)(soundFile, right_channel_volume, left_channel_volume);
 	}
 
-	void PlaySoundLocated(int soundFile, float a2, float a3, Vector3D *Position)
+	void PlaySoundLocated(int soundFile, float a2, float a3, CVector3D *Position)
 	{
-		typedef int(*PlaySoundLocated)(int soundFile, float a2, float a3, Vector3D *Position);
+		typedef int(*PlaySoundLocated)(int soundFile, float a2, float a3, CVector3D *Position);
 		int ret = PlaySoundLocated(0x52F800)(soundFile, a2, a3, Position); //52F920
 	}
 
@@ -55,9 +60,10 @@ namespace GameApp
 		return ret;
 	}
 
-	int GetActionState(DWORD *a1, int a2) //530010
+	int GetActionState_(int *a1, int a2)
 	{
 		int result;
+		int to_return;
 
 		result = (int)a1[a2 + 66];
 
@@ -70,10 +76,22 @@ namespace GameApp
 			}
 		}
 
-		if (result != 1){
+		result = a1[a2 + 113];
+		if ( result && (result_LOBYTE = *(BYTE *)result, (BYTE)result) )
+			result = (unsigned __int8)result;
+		else
 			result = 0;
-		}
 
 		return result;
+	}
+
+	bool GetActionState(int a2)
+	{
+		if (GetActionState_((int *)0x6D1DD8, a2) == 1){
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 }
