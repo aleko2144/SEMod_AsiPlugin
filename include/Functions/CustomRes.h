@@ -7,7 +7,8 @@
 
 namespace CustomRes
 {
-	void SetViewportAspect();
+	void PrepareViewport();
+	void FixGUI();
 }
 	
 #endif

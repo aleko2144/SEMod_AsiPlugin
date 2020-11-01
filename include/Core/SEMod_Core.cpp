@@ -5,6 +5,7 @@
 #include <cfloat>
 #include "..\Utils\PluginUtils.h"
 #include "..\Functions\CustomRes.h"
+#include "..\Utils\GameApp.h"
 #include "SEMod_Core.h"
 
 int* viewerPtr;
@@ -14,18 +15,24 @@ void GetConfigs(){
 	use_custom_res = GetPrivateProfileIntA("Plugin", "CustomRes", 0, ".\\Launcher.ini");
 }
 
+void UpdateConstants(){
+	viewerPtr = (int*)0x6D2098;
+}
+
 namespace SEMod
 {
 	void Initialize()
 	{
-		viewerPtr = (int*)0x6D2098;
+		UpdateConstants();
 		GetConfigs();
 		if (use_custom_res){
-			CustomRes::SetViewportAspect();
+			CustomRes::PrepareViewport();
 		}
 	}
 	void Process()
 	{
-		; //do something	
+		if (use_custom_res){
+			CustomRes::FixGUI();
+		}
 	}
 }

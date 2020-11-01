@@ -94,4 +94,11 @@ namespace GameApp
 			return false;
 		}
 	}
+
+	int WriteWarnLog(char* str)
+	{
+		typedef int(*WriteWarnLog)(char* str);
+		int ret = WriteWarnLog(0x4E25F6)(str);
+		return ret;
+	}
 }

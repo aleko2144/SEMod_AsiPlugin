@@ -1,12 +1,12 @@
 #include <windows.h>
 #include "dllmain.h"
-#include "include\Formats\CMath.h"
-#include "include\Formats\CVector.h"
-#include "include\Utils\PluginUtils.h"
+//#include "include\Formats\CMath.h"
+//#include "include\Formats\CVector.h"
+//#include "include\Utils\PluginUtils.h"
 //#include "include\Formats\CBlock.h"
 //#include "include\CPanel.h"
 //#include "include\CVehicle.h"
-#include "include\Utils\GameApp.h"
+//#include "include\Utils\GameApp.h"
 #include "include\Core\SEMod_Core.h"
 
 using namespace std;
@@ -18,7 +18,7 @@ DllClass::DllClass()
 
 void OnTimer(HWND hwnd,   UINT msg, UINT idTimer, DWORD dwTime)
 {
-	if (!(*(DWORD *)0x6D2098)) {
+	if (!(*(DWORD*)0x6D2098)) {
 		SEMod::Initialize();
 	}
 	else{

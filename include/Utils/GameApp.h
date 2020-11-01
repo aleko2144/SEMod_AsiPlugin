@@ -14,6 +14,7 @@ namespace GameApp
 	int GetPlayerID();
 	double GetPlayerCapital(int playerID);
 	bool GetActionState(int a2);
+	int WriteWarnLog(char* str);
 }
 
 #endif
