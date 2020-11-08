@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=3
 CompilerSettings=00000001c0000000000000000
-UnitCount=16
+UnitCount=17
 
 [VersionInfo]
 Major=1
@@ -171,9 +171,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit17]
-FileName=include\PluginMain.cpp
+FileName=include\GameObjects\Vehicle.h
 CompileCpp=1
-Folder=include
+Folder=include/GameObjects
 Compile=1
 Link=1
 Priority=1000

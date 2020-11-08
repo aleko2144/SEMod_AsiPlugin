@@ -12,6 +12,7 @@ int xres, yres;
 namespace CustomRes
 {
 	void PrepareViewport(){
+		WriteDebugLog("STARTED: CustomRes::PrepareViewport");
 		xres = GetPrivateProfileIntA("Plugin", "xres", 1024, ".\\Launcher.ini");
 		yres = GetPrivateProfileIntA("Plugin", "yres", 768, ".\\Launcher.ini");
 		float xres_ini = float(xres);
@@ -43,8 +44,10 @@ namespace CustomRes
 			VirtualProtect((LPVOID)0x4DE3D7, sizeof(float), PAGE_READWRITE, OldProtect_4DE3D7);
 			*(float*)0x4DE3D7 = var_4DE3D7_m;
 		}
+		WriteDebugLog("COMPLETED: CustomRes::PrepareViewport");
 	}
 	void FixGUI(){
+		WriteDebugLog("STARTED: CustomRes::FixGUI");
 		float test_val = xres - 385;
 		
 		if (*(int*)0x6CED3C != test_val){
@@ -52,5 +55,6 @@ namespace CustomRes
 			*(int*)0x6CED34 = xres - 225;
 			*(int *)(*(DWORD *)(*(DWORD*)0x6CECCC + 0x38) + 0x2C) = (xres - 1024)/2; //MenuGasSpriteRectX
 		}
+		WriteDebugLog("COMPLETED: CustomRes::FixGUI");
 	}
 }

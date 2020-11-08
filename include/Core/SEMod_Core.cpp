@@ -6,10 +6,12 @@
 #include "..\Utils\PluginUtils.h"
 #include "..\Functions\CustomRes.h"
 #include "..\Utils\GameApp.h"
+#include "..\GameObjects\Vehicle.h"
 #include "SEMod_Core.h"
 
 int* viewerPtr;
 bool use_custom_res;
+Vehicle PlayerVehicle;
 
 void GetConfigs(){
 	use_custom_res = GetPrivateProfileIntA("Plugin", "CustomRes", 0, ".\\Launcher.ini");
@@ -23,16 +25,29 @@ namespace SEMod
 {
 	void Initialize()
 	{
+		WriteDebugLog("STARTED: SEMod::Initialize");
 		UpdateConstants();
 		GetConfigs();
 		if (use_custom_res){
 			CustomRes::PrepareViewport();
 		}
+		//if (enable_interior_panel){
+		//	EnableInteriorPanel();
+		//}
+		WriteDebugLog("COMPLETED: SEMod::Initialize");
 	}
 	void Process()
 	{
+		WriteDebugLog("STARTED: SEMod::Process");
 		if (use_custom_res){
 			CustomRes::FixGUI();
 		}
+		
+		PlayerVehicle.Process();
+		
+		if (PlayerVehicle.Changed()){
+			PlayerVehicle.Reset();
+		}
+		WriteDebugLog("COMPLETED: SEMod::Process");
 	}
 }
