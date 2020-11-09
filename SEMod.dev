@@ -24,12 +24,12 @@ HostApplication=
 UseCustomMakefile=0
 CustomMakefile=
 CommandLine=
-Folders=include,include/Core,include/Formats,include/Functions,include/GameObjects,include/Utils
+Folders=include,include/Core,include/Formats,include/Functions,include/GameObjects,include/ModulesData,include/Utils
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=3
 CompilerSettings=00000001c0000000000000000
-UnitCount=17
+UnitCount=20
 
 [VersionInfo]
 Major=1
@@ -181,9 +181,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit18]
-FileName=include\PluginMain.h
+FileName=include\ModulesData\Block.h
 CompileCpp=1
-Folder=include
+Folder=include/ModulesData
 Compile=1
 Link=1
 Priority=1000
@@ -224,6 +224,26 @@ BuildCmd=
 FileName=include\Utils\PluginUtils.cpp
 CompileCpp=1
 Folder=include/Utils
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit19]
+FileName=include\ModulesData\BlockKey.h
+CompileCpp=1
+Folder=include/ModulesData
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit20]
+FileName=include\ModulesData\BlockSpace.h
+CompileCpp=1
+Folder=include/ModulesData
 Compile=1
 Link=1
 Priority=1000

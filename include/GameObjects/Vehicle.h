@@ -5,6 +5,9 @@
 #include <iostream>
 #include <string>
 #include "..\Utils\PluginUtils.h"
+#include "..\ModulesData\Block.h"
+#include "..\ModulesData\BlockKey.h"
+#include "..\ModulesData\BlockSpace.h"
 
 class Vehicle
 {
@@ -15,6 +18,8 @@ public:
 	int *Car_V;
 	string vehicle_prefix;
 	string cabine_prefix;
+	Block cab_node;
+	BlockKey AvtoKey;
 	
 	bool DebugMode;
 
@@ -47,6 +52,12 @@ public:
 		vehicle_prefix = (((char *)0x697888 + (2416 * ID) + 2342));
 		cabine_prefix = (((char *)0x697888 + (2416 * ID) + 2322));
 		
+		/*char buffer[64];
+		sprintf(buffer, "%sCab", cabine_prefix.c_str());
+		
+		cab_node.offset = GetSceneObject(0, buffer);
+		AvtoKey.offset = GetSceneObjectLogged(cab_node.offset, "AvtoKey", "");*/
+		
 		WriteDebugLog("COMPLETED: Vehicle.Reset()");
 	}
 	bool Changed()
@@ -54,11 +65,11 @@ public:
 		int* playerVehicle_current = (int*)(*(int *)0x6D2098 + 616);
 
 		if (offset != playerVehicle_current){
-			WriteDebugLog("Vehicle.Changed() = True");
+			WriteDebugLog("--- VEHICLE CHANGED ---");
 			return true;
 		}
 		else{
-			WriteDebugLog("Vehicle.Changed() = False");
+			//WriteDebugLog("Vehicle.Changed() = False");
 			return false;
 		}
 	}
@@ -75,13 +86,13 @@ public:
 		sprintf(buffer, "-----ID: %d", ID);
 		WriteVehicleLog(file_name, buffer);
 		
-		sprintf(buffer, "-----Offset: %x", offset);
+		sprintf(buffer, "-----Offset: %X", offset);
 		WriteVehicleLog(file_name, buffer);
 
-		sprintf(buffer, "-----Task offset: %x", task_offset);
+		sprintf(buffer, "-----Task offset: %X", task_offset);
 		WriteVehicleLog(file_name, buffer);
 
-		sprintf(buffer, "-----Car_V offset: %x", Car_V);
+		sprintf(buffer, "-----Car_V offset: %X", Car_V);
 		WriteVehicleLog(file_name, buffer);
 		
 		sprintf(buffer, "-----Prefix: %s", vehicle_prefix.c_str());
@@ -90,7 +101,7 @@ public:
 		sprintf(buffer, "-----PrefixCab: %s", cabine_prefix.c_str());
 		WriteVehicleLog(file_name, buffer);
 		
-		sprintf(buffer, "-----SV data offset: %x", ((int *)0x6D2244 + (ID * 0x5D0)));
+		sprintf(buffer, "-----SV data offset: %X", ((int *)0x6D2244 + (ID * 0x5D0)));
 		WriteVehicleLog(file_name, buffer);
 		
 		WriteDebugLog("COMPLETED: Vehicle.PrintDebugData()");
