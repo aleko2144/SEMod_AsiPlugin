@@ -13,7 +13,7 @@ bool GetPrivateProfileBoolean(string selection, string varname, string default_v
 	GetPrivateProfileStringA(selection.c_str(), varname.c_str(), default_val.c_str(), returnedString, 512, filename.c_str());
 	string result = returnedString;
 
-	if (result.find("on") != std::string::npos)
+	if (result.find("on") != std::string::npos) //Case Switch
 	{
 		return true;
 	}

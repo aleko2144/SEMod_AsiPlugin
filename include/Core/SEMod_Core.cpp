@@ -14,7 +14,7 @@ bool use_custom_res;
 Vehicle PlayerVehicle;
 
 void GetConfigs(){
-	use_custom_res = GetPrivateProfileIntA("Plugin", "CustomRes", 0, ".\\Launcher.ini");
+	use_custom_res = GetPrivateProfileBoolean("VIDEO", "switch", "off", ".\\SEMod.ini");
 }
 
 void UpdateConstants(){
@@ -26,11 +26,11 @@ namespace SEMod
 	void Initialize()
 	{
 		WriteDebugLog("STARTED: SEMod::Initialize");
-		UpdateConstants();
 		GetConfigs();
 		if (use_custom_res){
 			CustomRes::PrepareViewport();
 		}
+		UpdateConstants();
 		//if (enable_interior_panel){
 		//	EnableInteriorPanel();
 		//}

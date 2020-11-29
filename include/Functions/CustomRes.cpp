@@ -13,18 +13,23 @@ namespace CustomRes
 {
 	void PrepareViewport(){
 		WriteDebugLog("STARTED: CustomRes::PrepareViewport");
-		xres = GetPrivateProfileIntA("Plugin", "xres", 1024, ".\\Launcher.ini");
-		yres = GetPrivateProfileIntA("Plugin", "yres", 768, ".\\Launcher.ini");
+		xres = GetPrivateProfileIntA("VIDEO", "xres", 1024, ".\\SEMod.ini");
+		yres = GetPrivateProfileIntA("VIDEO", "yres", 768, ".\\SEMod.ini");
 		float xres_ini = float(xres);
 		float yres_ini = float(yres);
 			
-		float aspect_coeff = GetPrivateProfileFloat("Plugin", "aspect_coeff", "1.2", ".\\Launcher.ini");
+		float aspect_coeff = GetPrivateProfileFloat("VIDEO", "aspect_coeff", "1.2", ".\\SEMod.ini");
 			
 		float var_4DE3CA = *(float*)0x4DE3CA;
 		float var_4DE3D7 = *(float*)0x4DE3D7;
 			
 		float var_4DE3CA_m = (xres_ini/yres_ini) * aspect_coeff;
 		float var_4DE3D7_m = aspect_coeff;
+		
+		
+		char buffer[128];
+		sprintf(buffer, "xres %d, yres &d, var_4DE3CA %f, var_4DE3D7 %f, var_4DE3CA_m %f, var_4DE3D7_m %f", xres, yres, var_4DE3CA, var_4DE3D7, var_4DE3CA_m, var_4DE3D7_m);
+		WriteDebugLog(buffer);
 		
 		// hex   int  &1F0
 		//0x110 (274) (272) 640x480

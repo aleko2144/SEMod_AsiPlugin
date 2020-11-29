@@ -250,3 +250,13 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit22]
+FileName=include\Functions\Panel.h
+CompileCpp=1
+Folder=include/Functions
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
