@@ -119,6 +119,12 @@ public:
 		use_TrailerKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "TrailerKey", "off", ".\\SEMod_vehicles.ini");
 		use_KMeterKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "KMeterKey", "off", ".\\SEMod_vehicles.ini");
 		
+		Vector3D::FillFromFloats(&tvCameraPosition[0], ((float*)((0x697888 + (2416 * ID) + 0x6F4))));
+		Vector3D::FillFromFloats(&tvCameraPosition[1], ((float*)((0x697888 + (2416 * ID) + 0x6F4 + 0xC))));
+		Vector3D::FillFromFloats(&tvCameraPosition[2], ((float*)((0x697888 + (2416 * ID) + 0x6F4 + 0x18))));
+		Vector3D::FillFromFloats(&tvCameraPosition[3], ((float*)((0x697888 + (2416 * ID) + 0x6F4 + 0x24))));
+		Vector3D::FillFromFloats(&tvCameraPosition[4], ((float*)((0x697888 + (2416 * ID) + 0x6F4 + 0x30))));
+		
 		if (use_PriborKey){
 			char buf[64];
 				
@@ -314,13 +320,11 @@ public:
 			SetCaseSwitch(PanelNode.offset, 0);
 		}
 		
-		//Vector3D::FillFromFloats(&tvCameraPosition[0], 
-		
-		char buffer[64];
+		//char buffer[256];
 		//CVector3D test_vector;
 		//float test_float = (((float *)0x697888 + (2416 * ID) + 1780)); //начало камер
 		//float* test_float = (((float *)0x697888 + (2416 * ID) + 1780));
-		float test_float = *(float *)((float *)0x697888 + (2416 * ID) + 1780 + 16);
+		//float *test_float = (float*)((0x697888 + (2416 * ID) + 0x6F4 + 0x14)); //*(float *)((float *)0x697888 + (2416 * ID) + 1780 + 16);
 		
 		//tech = 6912136
 		//полезная информация
@@ -329,8 +333,10 @@ public:
 		//00000734 (1844) tvCameraRightConer CVector ?            ; XREF: GetMirrorCameraPosForVehicle+24/o
 		
 		//sprintf(buffer, "ID: %d, x: %.2f, y: %.2f, z: %.2f, *offset: %d", ID, test_float[0], test_float[1], test_float[2], &test_float);
-		sprintf(buffer, "ID: %d, x: %.2f, *offset: %d", ID, test_float, &test_float);
-		GameApp::DisplayScreenMessage(buffer);
+		//sprintf(buffer, "ID: %d, z: %.2f, *offset: %x", ID, test_float[0], test_float);
+		//sprintf(buffer, "ID: %d, tvCameraPosition0 = %.1f %.1f %.1f, tvCameraPosition1 = %.1f %.1f %.1f, tvCameraPosition2 = %.1f %.1f %.1f,\ntvCameraPosition3 = %.1f %.1f %.1f, tvCameraPosition4 = %.1f %.1f %.1f, tvCameraPosition5 = %.1f %.1f %.1f", ID, tvCameraPosition[0].x, tvCameraPosition[0].y, tvCameraPosition[0].z, tvCameraPosition[1].x, tvCameraPosition[1].y, tvCameraPosition[1].z, tvCameraPosition[2].x, tvCameraPosition[2].y, tvCameraPosition[2].z, tvCameraPosition[3].x, tvCameraPosition[3].y, tvCameraPosition[3].z, tvCameraPosition[4].x, tvCameraPosition[4].y, tvCameraPosition[4].z);
+		//sprintf(buffer, "ID: %d, tvCameraPosition1 = %.1f %.1f %.1f", ID, tvCameraPosition[1].x, tvCameraPosition[1].y, tvCameraPosition[1].z);
+		//GameApp::DisplayScreenMessage(buffer);
 		
 		WriteDebugLog("COMPLETED: Vehicle.Process()");
 		//char buffer[128];
