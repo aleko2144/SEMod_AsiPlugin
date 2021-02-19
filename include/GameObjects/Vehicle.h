@@ -8,7 +8,11 @@
 #include "..\ModulesData\Block.h"
 #include "..\ModulesData\BlockKey.h"
 #include "..\ModulesData\BlockSpace.h"
+#include "..\Formats\CVector.h"
 //#include "..\Functions\Panel.h"
+
+bool use_PriborKey;
+bool use_PanelKey;
 
 class Vehicle
 {
@@ -28,8 +32,9 @@ public:
 	
 	int trailerAttached;
 	
+	CVector3D tvCameraPosition[5];
+	
 	//Салон
-	bool use_CabPanel;
 	bool use_LightsKey;
 	bool use_SpeedArrowKey;
 	bool use_TachoArrowKey;
@@ -75,6 +80,12 @@ public:
 		currentGear = 0;
 		lightsState = 0;
 		handbrakeState = 0;
+		
+		Vector3D::Clear(&tvCameraPosition[0]);
+		Vector3D::Clear(&tvCameraPosition[1]);
+		Vector3D::Clear(&tvCameraPosition[2]);
+		Vector3D::Clear(&tvCameraPosition[3]);
+		Vector3D::Clear(&tvCameraPosition[4]);
 	
 		WriteDebugLog("COMPLETED: Vehicle.Clear()");
 	}
@@ -95,7 +106,8 @@ public:
 		vehicle_prefix = (((char *)0x697888 + (2416 * ID) + 2342));
 		cabine_prefix = (((char *)0x697888 + (2416 * ID) + 2322));
 		
-		use_CabPanel = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "CabPanel", "off", ".\\SEMod_vehicles.ini");
+		use_PriborKey = GetPrivateProfileBoolean("VEHICLES", "PriborKey", "off", ".\\SEMod.ini");
+		use_PanelKey = GetPrivateProfileBoolean("VEHICLES", "PanelKey", "off", ".\\SEMod.ini");
 		use_LightsKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "LightsKey", "off", ".\\SEMod_vehicles.ini");
 		use_SpeedArrowKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "SpeedArrowKey", "off", ".\\SEMod_vehicles.ini");
 		use_TachoArrowKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "TachoArrowKey", "off", ".\\SEMod_vehicles.ini");
@@ -107,10 +119,7 @@ public:
 		use_TrailerKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "TrailerKey", "off", ".\\SEMod_vehicles.ini");
 		use_KMeterKey = GetPrivateProfileBoolean(vehicle_prefix.c_str(), "KMeterKey", "off", ".\\SEMod_vehicles.ini");
 		
-		if (use_CabPanel){
-			CabNode.offset = GetSceneObject(0, cabine_prefix.c_str());
-			PanelNode.offset = GetSceneObjectLogged(CabNode.offset, "PanelNode", "");
-			
+		if (use_PriborKey){
 			char buf[64];
 				
 			if (use_LightsKey){
@@ -129,6 +138,11 @@ public:
 				sprintf(buf, "%sFuelArrowKey", cabine_prefix.c_str());
 				FuelArrowKey.offset = GetSceneObjectLogged(0, buf, "");
 			}
+		}
+		
+		if (use_PanelKey){
+			CabNode.offset = GetSceneObject(0, cabine_prefix.c_str());
+			PanelNode.offset = GetSceneObjectLogged(CabNode.offset, "PanelNode", "");
 			
 			if (use_GearKey){
 				GearKey.offset = GetSceneObjectLogged(PanelNode.offset, "GearKey", "");
@@ -223,9 +237,7 @@ public:
 			PrintDebugData();
 		}
 		
-		if (use_CabPanel){
-			SetCaseSwitch(PanelNode.offset, 1);
-			
+		if (use_PriborKey){
 			if (use_LightsKey){
 				SetCaseSwitch(LightsKey.offset, lightsState);
 			}
@@ -252,7 +264,12 @@ public:
 				else {
 					SetCaseSwitch(FuelArrowKey.offset, 0);
 				}
-			}
+			}	
+		}
+		
+		if (use_PanelKey){
+			SetCaseSwitch(PanelNode.offset, 1);
+		
 			if (use_GearKey){
 				SetCaseSwitch(GearKey.offset, currentGear);
 			}
@@ -296,6 +313,24 @@ public:
 		else{
 			SetCaseSwitch(PanelNode.offset, 0);
 		}
+		
+		//Vector3D::FillFromFloats(&tvCameraPosition[0], 
+		
+		char buffer[64];
+		//CVector3D test_vector;
+		//float test_float = (((float *)0x697888 + (2416 * ID) + 1780)); //начало камер
+		//float* test_float = (((float *)0x697888 + (2416 * ID) + 1780));
+		float test_float = *(float *)((float *)0x697888 + (2416 * ID) + 1780 + 16);
+		
+		//tech = 6912136
+		//полезная информация
+		//000006F4 (1780) tvCameraPosition CVector 5 dup(?)       ; XREF: GetMirrorCameraPosForVehicle+48/o
+		//00000730 (1840) tvCameraPositionCount dd ?
+		//00000734 (1844) tvCameraRightConer CVector ?            ; XREF: GetMirrorCameraPosForVehicle+24/o
+		
+		//sprintf(buffer, "ID: %d, x: %.2f, y: %.2f, z: %.2f, *offset: %d", ID, test_float[0], test_float[1], test_float[2], &test_float);
+		sprintf(buffer, "ID: %d, x: %.2f, *offset: %d", ID, test_float, &test_float);
+		GameApp::DisplayScreenMessage(buffer);
 		
 		WriteDebugLog("COMPLETED: Vehicle.Process()");
 		//char buffer[128];

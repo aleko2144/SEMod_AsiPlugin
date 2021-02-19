@@ -42,24 +42,6 @@ namespace GameApp
 		int ret = PlaySoundLocated(0x52F800)(soundFile, a2, a3, Position); //52F920
 	}
 
-	int GetPlayerID()
-	{
-		int Viewer = *(DWORD *)0x6D2098;
-		int playerVehicle = *(DWORD *)(Viewer + 0x268);
-		//int VehicleTask = *(DWORD *)(playerVehicle + 0x10);
-
-		int playerID = *(DWORD *)(playerVehicle + 0x10 + 0x508C);
-
-		return playerID;
-	}
-
-	double GetPlayerCapital(int playerID)
-	{
-		typedef double(*GetPlayerCapital)(int playerID);
-		double ret = GetPlayerCapital(0x429620)(playerID);
-		return ret;
-	}
-
 	int GetActionState_(int *a1, int a2)
 	{
 		int result;

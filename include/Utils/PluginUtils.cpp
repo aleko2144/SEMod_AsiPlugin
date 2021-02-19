@@ -20,6 +20,9 @@ bool GetPrivateProfileBoolean(string selection, string varname, string default_v
 	else if (result.find("true") != std::string::npos){
 		return true;
 	}
+	else if (result.find("1") != std::string::npos){
+		return true;
+	}
 	else
 	{
 		return false;

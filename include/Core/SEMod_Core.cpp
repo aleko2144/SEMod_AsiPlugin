@@ -7,14 +7,18 @@
 #include "..\Functions\CustomRes.h"
 #include "..\Utils\GameApp.h"
 #include "..\GameObjects\Vehicle.h"
+#include "..\GameObjects\Player.h"
 #include "SEMod_Core.h"
 
 int* viewerPtr;
 bool use_custom_res;
+bool play_custom_videos;
+Player Driver;
 Vehicle PlayerVehicle;
 
 void GetConfigs(){
-	use_custom_res = GetPrivateProfileBoolean("VIDEO", "switch", "off", ".\\SEMod.ini");
+	use_custom_res = GetPrivateProfileBoolean("VIDEO", "Enabled", "off", ".\\SEMod.ini");
+	play_custom_videos = GetPrivateProfileBoolean("AVI", "Enabled", "off", ".\\SEMod.ini");
 }
 
 void UpdateConstants(){
@@ -42,6 +46,8 @@ namespace SEMod
 		if (use_custom_res){
 			CustomRes::FixGUI();
 		}
+		
+		Driver.Update();
 		
 		PlayerVehicle.Process();
 		
