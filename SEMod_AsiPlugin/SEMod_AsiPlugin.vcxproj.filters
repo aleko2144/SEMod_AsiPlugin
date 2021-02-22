@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{2c951297-70bc-45b3-832d-92d69ed38094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Core">
+      <UniqueIdentifier>{694f1ad4-4376-48f3-8121-239064613e01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Formats">
+      <UniqueIdentifier>{42080afa-b73c-426b-b979-a7ea40292092}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Functions">
+      <UniqueIdentifier>{c99918f2-5fa6-4a6d-b489-64f73cf82237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GameObjects">
+      <UniqueIdentifier>{2f62f649-9067-4d12-bba4-d237dfc9728d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ModulesData">
+      <UniqueIdentifier>{12a9476b-7cd8-4538-ad44-5ef852e6cfac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utils">
+      <UniqueIdentifier>{766666d3-6e89-46ef-adc8-13bfa5e159b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ObjectInspector">
+      <UniqueIdentifier>{f1d0b5ce-8733-43aa-a211-22e9b5f1ed1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PluginExtension">
+      <UniqueIdentifier>{e7b13b30-eb18-4a1c-9345-bf1b28243379}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PluginExtension\ObjectInspector">
+      <UniqueIdentifier>{87ba002f-b557-4571-a706-686ae9d2bfc1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\SEMod.ini">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+    <None Include="..\SEMod_vehicles.ini">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dllmain.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Core\SEMod_Core.h">
+      <Filter>Include\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Formats\CMath.h">
+      <Filter>Include\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Formats\CMatrix.h">
+      <Filter>Include\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Formats\CVector.h">
+      <Filter>Include\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Functions\CustomRes.h">
+      <Filter>Include\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GameObjects\Vehicle.h">
+      <Filter>Include\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ModulesData\Block.h">
+      <Filter>Include\ModulesData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ModulesData\BlockKey.h">
+      <Filter>Include\ModulesData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ModulesData\BlockSpace.h">
+      <Filter>Include\ModulesData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Utils\GameApp.h">
+      <Filter>Include\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Utils\PluginUtils.h">
+      <Filter>Include\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PluginExtension\ObjectInspector\CObjectInspector.h">
+      <Filter>PluginExtension\ObjectInspector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PluginExtension\IPluginExtension.h">
+      <Filter>PluginExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PluginExtension\ExtensionRegister.h">
+      <Filter>PluginExtension</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dllmain.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Core\SEMod_Core.cpp">
+      <Filter>Include\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Formats\CMath.cpp">
+      <Filter>Include\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Formats\CMatrix.cpp">
+      <Filter>Include\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Formats\CVector.cpp">
+      <Filter>Include\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Functions\CustomRes.cpp">
+      <Filter>Include\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Utils\GameApp.cpp">
+      <Filter>Include\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Utils\PluginUtils.cpp">
+      <Filter>Include\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PluginExtension\ObjectInspector\CObjectInspector.cpp">
+      <Filter>PluginExtension\ObjectInspector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PluginExtension\IPluginExtension.cpp">
+      <Filter>PluginExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PluginExtension\ExtensionRegister.cpp">
+      <Filter>PluginExtension</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

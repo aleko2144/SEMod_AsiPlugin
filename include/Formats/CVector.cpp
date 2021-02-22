@@ -20,7 +20,11 @@ namespace Vector2D
 		vector->y = (float)source[1];
 	}
 	
-	float GetLength(CVector2D a1, CVector2D a2){
+	float GetLength(CVector2D vector){
+		return sqrt(pow((vector.x), 2) + pow((vector.y), 2));
+	}
+	
+	float GetDistance(CVector2D a1, CVector2D a2){
 		return sqrt(pow((a1.x - a2.x), 2) + pow((a1.y - a2.y), 2));
 	}
 
@@ -59,7 +63,11 @@ namespace Vector3D
 		vector->z = (float)source[2];
 	}
 	
-	float GetLength(CVector3D a1, CVector3D a2){
+	float GetLength(CVector3D vector){
+		return sqrt(pow((vector.x), 2) + pow((vector.y), 2) + pow((vector.z), 2));
+	}
+
+	float GetDistance(CVector3D a1, CVector3D a2){
 		return sqrt(pow((a1.x - a2.x), 2) + pow((a1.y - a2.y), 2) + pow((a1.z - a2.z), 2));
 	}
 

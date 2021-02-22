@@ -9,30 +9,38 @@
 //#include "include\Utils\GameApp.h"
 #include "include\Core\SEMod_Core.h"
 
+
+
 using namespace std;
+HINSTANCE SEMod::hinstDLL;
 
 DllClass::DllClass()
 {
 	;
 }
+SEMod modClass;
 
 void OnTimer(HWND hwnd,   UINT msg, UINT idTimer, DWORD dwTime)
 {
 	if (!(*(DWORD*)0x6D2098)) {
-		SEMod::Initialize();
+		modClass.Initialize();
+		//SEMod::Initialize();
 	}
 	else{
-		SEMod::Process();
+		modClass.Process();
+		//SEMod::Process();
 	}
 }
 	
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
-
 	switch(fdwReason)
 	{
 		case DLL_PROCESS_ATTACH:
 		{
+			SEMod::hinstDLL = hinstDLL;
+
+
 			SetTimer(0, 0, 10, (TIMERPROC)OnTimer);
 			break;
 		}

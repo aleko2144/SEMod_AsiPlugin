@@ -1,7 +1,10 @@
 #include <windows.h>
 #include <iostream>
 #include <string>
+#include <list>
+#include <vector>
 #include "PluginUtils.h"
+
 
 using namespace std;
 
@@ -18,6 +21,9 @@ bool GetPrivateProfileBoolean(string selection, string varname, string default_v
 		return true;
 	}
 	else if (result.find("true") != std::string::npos){
+		return true;
+	}
+	else if (result.find("1") != std::string::npos){
 		return true;
 	}
 	else
@@ -104,4 +110,63 @@ bool IsKeyJustPressed(int key)
 	else {
 		keyPressed = false;
 	}
+}
+std::list<Keys> pressedKeys = {};
+/// <summary>
+/// Возвращает true только в случае первого нажатия кнопки, долговременное нажатие возвращает false.
+/// </summary>
+/// <param name="key">Клавиша (см. Keys)</param>
+/// <returns></returns>
+bool GetKeyDown(Keys key) 
+{
+	if (GetKeyState(key))
+	{
+		bool found = (std::find(pressedKeys.begin(), pressedKeys.end(), key) != pressedKeys.end());
+		if (found)
+		{
+			return false;
+		}
+		pressedKeys.push_back(key);
+		return true;
+	}
+	if (bool found = (std::find(pressedKeys.begin(), pressedKeys.end(), key) != pressedKeys.end()))
+	{
+		pressedKeys.remove(key);
+	}
+	return false;
+}
+/// <summary>
+/// Возвращает true в случае первого нажатия кнопки и последующего ее удержания.
+/// </summary>
+/// <param name="key">Клавиша (см. Keys)</param>
+/// <returns></returns>
+bool GetKeyPressed(Keys key)
+{
+	if (GetKeyState(key))
+	{
+		if (bool found = (std::find(pressedKeys.begin(), pressedKeys.end(), key) != pressedKeys.end()))
+		{
+			return true;
+		}
+		return true;
+	}
+	return false;
+
+}
+/// <summary>
+/// Возвращает true, если клавиша отпущена.
+/// </summary>
+/// <param name="key">Клавиша (см. Keys)</param>
+/// <returns></returns>
+bool GetKeyUp(Keys key)
+{
+	if (bool found = (std::find(pressedKeys.begin(), pressedKeys.end(), key) != pressedKeys.end()))
+	{
+		if (!GetKeyState(key))
+		{
+			pressedKeys.remove(key);
+			return true;
+		}
+	}
+	return false;
 }

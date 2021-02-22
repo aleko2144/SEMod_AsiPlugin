@@ -3,13 +3,13 @@
 #include <string>
 #include "..\Utils\PluginUtils.h"
 #include "..\Utils\GameApp.h"
-#include "CustomRes.h"
+#include "CustomVideos.h"
 
 using namespace std;
 
 int xres, yres;
 
-namespace CustomRes
+namespace CustomVideos
 {
 	void PrepareViewport(){
 		WriteDebugLog("STARTED: CustomRes::PrepareViewport");
@@ -40,12 +40,12 @@ namespace CustomRes
 		*(int *)(*(int *)0x6CEC90 + 408) = 306; //перезаписываем разрешение экрана, которое выбрано в настройках игры (по таблице)
 			
 		if (var_4DE3CA != var_4DE3CA_m){
-			PDWORD OldProtect_4DE3CA = (PDWORD) malloc(sizeof(PDWORD));
+			PDWORD OldProtect_4DE3CA;
 			VirtualProtect((LPVOID)0x4DE3CA, sizeof(float), PAGE_READWRITE, OldProtect_4DE3CA);
 			*(float*)0x4DE3CA = var_4DE3CA_m;
 		}
 		if (var_4DE3D7 != var_4DE3D7_m){
-			PDWORD OldProtect_4DE3D7 = (PDWORD)malloc(sizeof(PDWORD));
+			PDWORD OldProtect_4DE3D7;
 			VirtualProtect((LPVOID)0x4DE3D7, sizeof(float), PAGE_READWRITE, OldProtect_4DE3D7);
 			*(float*)0x4DE3D7 = var_4DE3D7_m;
 		}
