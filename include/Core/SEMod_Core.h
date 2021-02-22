@@ -2,17 +2,23 @@
 #define MOD_CORE_H
 #include <list>
 #include "../../PluginExtension/IPluginExtension.h"
-
+#include <windows.h>
+#include <memory>
 class SEMod
 {
 public:
-	void Initialize();
+	void Initialize(HINSTANCE Instance);
 	void Process();
 	void RegisterExtension(IPluginExtension *extension);
-	std::list<IPluginExtension*> plugins = {};
-	static HINSTANCE hinstDLL;
+	static HINSTANCE GetDLLInstance();
+	SEMod(HINSTANCE Instance);
+	SEMod();
 
-	//	HINSTANCE GetDLLInstance();
+
+private:
+	static HINSTANCE hinstDLL;
+	std::list<IPluginExtension*> plugins = {};
+
 //	SEMod(HINSTANCE hInst);
 //private:
 

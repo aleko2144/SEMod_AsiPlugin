@@ -1,15 +1,14 @@
-#include <windows.h>
 #include <string>
 #include <iostream>
 #include <math.h>
 #include <cfloat>
+#include <Windows.h>
 #include "SEMod_Core.h"
 #include "..\Utils\PluginUtils.h"
 #include "..\Functions\CustomRes.h"
 #include "..\Utils\GameApp.h"
 #include "..\GameObjects\Vehicle.h"
 #include "..\GameObjects\Player.h"
-#include "..\..\PluginExtension\ObjectInspector\CObjectInspector.h"
 #include "..\..\PluginExtension\ExtensionRegister.h"
 
 int* viewerPtr;
@@ -41,9 +40,24 @@ void UpdateConstants(){
 //{
 //	hinstDLL = hInst;
 //}
+HINSTANCE SEMod::hinstDLL = (HINSTANCE)malloc(sizeof(HINSTANCE));
+SEMod::SEMod(HINSTANCE Instance)
+{
+	hinstDLL = Instance;
+}
 
-	void SEMod::Initialize()
+SEMod::SEMod()
+{
+}
+
+HINSTANCE SEMod::GetDLLInstance()
+{
+	return hinstDLL;
+}
+
+	void SEMod::Initialize(HINSTANCE Instance)
 	{
+		hinstDLL = Instance;
 		WriteDebugLog("STARTED: SEMod::Initialize");
 		ExtensionRegister::RegisterExtensions(this);
 

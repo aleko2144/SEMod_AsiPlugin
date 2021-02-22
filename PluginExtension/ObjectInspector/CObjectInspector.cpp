@@ -1,8 +1,8 @@
 #include "CObjectInspector.h"
 #include "../../dllmain.h"
 #include "../../include/Core/SEMod_Core.h"
-#include <list>
 #include <atlbase.h>
+
 #define BUTTON_UPDATE	(WM_APP+1001)
 #define LIST_BOX		(WM_APP+1002)
 #define FIND_EDITBOX	(WM_APP+1003)
@@ -56,26 +56,58 @@ void CObjectInspector::UpdateListBox()
 	}
 	SetFocus(hwndList);
 }
-void CObjectInspector::LoadParentTree()
+void CObjectInspector::LoadParentTree(CSimpleBlock* block)
 {
+	list<char*> _list = {};
+	_list.push_back((char*)block->m_sName);
+	CSimpleBlock* i;
+	for (i = (CSimpleBlock*)block->m_pParentBlock; i; i = (CSimpleBlock*)i->m_pParentBlock)
+	{
+		_list.push_back((char*)i->m_sName);
+
+	}
+	FillListBox(&_list);
 }
 void CObjectInspector::FindObjectAndLoadTree()
 {
 	HWND hwndFindEditBox = GetDlgItem(_hwnd, FIND_EDITBOX);
-	LPMSG msg = (LPMSG)malloc(sizeof(LPMSG));
-	GetMessage(msg, hwndFindEditBox, 0, 0);
+	TCHAR msg[32];
+	char bName[32];
+	GetWindowText(hwndFindEditBox, msg, 32);
+	wcstombs(bName, msg, 32);
+	CSimpleBlock* obj = (CSimpleBlock*)GetSceneObject(NULL, bName);
+	if (obj)
+		LoadParentTree(obj);
+
 
 
 	return;
 
 }
+void CObjectInspector::FillListBox(list<char*>* _list)
+{
+	HWND hwndList = GetDlgItem(_hwnd, LIST_BOX);
+
+	for (auto iter = _list->begin(); iter != _list->end(); iter++)
+	{
+
+		CA2T name(*iter);
+		int pos = (int)SendMessage(hwndList, LB_ADDSTRING, 0,
+			(LPARAM)name.m_psz);
+		SendMessage(hwndList, LB_SETITEMDATA, pos, (LPARAM)pos);
+
+	}
+	SetFocus(hwndList);
+
+}
+
 void CObjectInspector::Init()
 {
 
 }
 void CObjectInspector::Process()
 {
-	if(GetKeyDown(Keys::KEY_U))
+	if (GetKeyDown(Keys::KEY_U))
 	{
 		CreateThread(0, NULL, ThreadProc, NULL, NULL, NULL);
 	}
@@ -88,7 +120,7 @@ void CObjectInspector::Process()
 BOOL CObjectInspector::RegisterDLLWindowClass(wchar_t szClassName[])
 {
 	WNDCLASSEX wc;
-	wc.hInstance = SEMod::hinstDLL;
+	wc.hInstance = SEMod::GetDLLInstance();//SEMod::hinstDLL;
 	wc.lpszClassName = (LPCWSTR)szClassName;
 	wc.lpfnWndProc = DLLWindowProc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -116,7 +148,7 @@ BOOL CObjectInspector::RegisterDLLWindowClass(wchar_t szClassName[])
 	int wHeight = 600, wWidth = 400;
 
 	HWND prnt_wnd = FindWindow(L"KoTR", L"KoTR");
-	_hwnd = CreateWindowEx(0, (LPCWSTR)szClassName, NULL, WS_EX_PALETTEWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, wWidth, wHeight, prnt_wnd, NULL, SEMod::hinstDLL, NULL);
+	_hwnd = CreateWindowEx(0, (LPCWSTR)szClassName, NULL, WS_EX_PALETTEWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, wWidth, wHeight, prnt_wnd, NULL, SEMod::GetDLLInstance(), NULL);
 	CreateWindow(L"EDIT", 0, WS_CHILD | WS_VISIBLE, 5, 2, wWidth - 60, 17, _hwnd, (HMENU)FIND_EDITBOX, (HINSTANCE)GetWindowLong(_hwnd, GWL_HINSTANCE), NULL);
 	CreateWindow(L"BUTTON", L"Find", BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE, wWidth - 55, 1, 50, 17, _hwnd, (HMENU)BUTTON_FIND, (HINSTANCE)GetWindowLong(_hwnd, GWL_HINSTANCE), NULL);
 	CreateWindow(L"BUTTON", L"btn", BS_DEFPUSHBUTTON | WS_CHILD | WS_VISIBLE, 5, wHeight - 50, 60, 20, _hwnd, (HMENU)BUTTON_UPDATE, (HINSTANCE)GetWindowLong(_hwnd, GWL_HINSTANCE), NULL);

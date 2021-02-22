@@ -98,6 +98,9 @@
     <ClInclude Include="..\PluginExtension\ExtensionRegister.h">
       <Filter>PluginExtension</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\GameObjects\Player.h">
+      <Filter>Include\GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dllmain.cpp">
@@ -132,6 +135,9 @@
     </ClCompile>
     <ClCompile Include="..\PluginExtension\ExtensionRegister.cpp">
       <Filter>PluginExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\GameObjects\Vehicle.cpp">
+      <Filter>Include\GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

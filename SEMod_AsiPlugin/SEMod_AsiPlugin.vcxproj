@@ -110,7 +110,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -162,6 +162,7 @@
     <ClInclude Include="..\include\Formats\CMatrix.h" />
     <ClInclude Include="..\include\Formats\CVector.h" />
     <ClInclude Include="..\include\Functions\CustomRes.h" />
+    <ClInclude Include="..\include\GameObjects\Player.h" />
     <ClInclude Include="..\include\GameObjects\Vehicle.h" />
     <ClInclude Include="..\include\ModulesData\Block.h" />
     <ClInclude Include="..\include\ModulesData\BlockKey.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="..\include\Formats\CMatrix.cpp" />
     <ClCompile Include="..\include\Formats\CVector.cpp" />
     <ClCompile Include="..\include\Functions\CustomRes.cpp" />
+    <ClCompile Include="..\include\GameObjects\Vehicle.cpp" />
     <ClCompile Include="..\include\Utils\GameApp.cpp" />
     <ClCompile Include="..\include\Utils\PluginUtils.cpp" />
     <ClCompile Include="..\PluginExtension\ExtensionRegister.cpp" />
